@@ -1,6 +1,4 @@
-# Jerry
-
-Welcome to Jerry: A FastAPI Authentication Microservice Boilerplate. 
+## A FastAPI Authentication Microservice Boilerplate. 
 
 It is a production-ready, extensible authentication microservice built with FastAPI, PostgreSQL, and JWT. This boilerplate is designed to be a reusable foundation for authentication in microservices architectures.
 
