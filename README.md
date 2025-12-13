@@ -171,6 +171,12 @@ docker compose down
 docker compose logs -f
 ```
 
+#### 3. Runnin Tests
+
+```bash
+docker compose run --rm test pytest tests/
+```
+
 ---
 
 ## ⚙️ Environment Configuration
