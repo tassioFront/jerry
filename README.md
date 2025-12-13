@@ -10,7 +10,6 @@ Jerry is FastAPI Authentication Microservice Boilerplate. A production-ready, ex
 - [Architecture](#architecture)
 - [Prerequisites](#prerequisites)
 - [Setup & Installation](#setup--installation)
-- [Environment Configuration](#environment-configuration)
 
 ---
 
@@ -177,49 +176,16 @@ docker compose logs -f
 docker compose run --rm test pytest tests/
 ```
 
----
-
-## ⚙️ Environment Configuration
-
-### `.env.example` Template
-
-```env
-# Database
-DATABASE_URL=postgresql://auth_user:auth_password@localhost:5432/auth_db
-DATABASE_POOL_SIZE=20
-DATABASE_MAX_OVERFLOW=0
-
-# JWT Configuration
-JWT_SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_HOURS=24
-JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# Application
-ENVIRONMENT=development
-DEBUG=True
-LOG_LEVEL=INFO
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
-
-# Email (for future email service integration)
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=noreply@yourservice.com
-
-# Service Info
-SERVICE_NAME=auth-service
-SERVICE_VERSION=1.0.0
+```bash
+docker compose run --rm test pytest tests/test_security.py
 ```
 
-### Environment-Specific Files
+or using the script 
 
-**`.env.test`** (for testing):
-```env
-DATABASE_URL=postgresql://auth_user:auth_password@localhost:5432/auth_test_db
-JWT_SECRET_KEY=test-secret-key-for-testing
-ENVIRONMENT=testing
-DEBUG=True
-LOG_LEVEL=DEBUG
+```bash
+./run-tests.sh
+```
+
+```bash
+./run-tests.sh tests/test_security.py
 ```
