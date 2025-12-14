@@ -146,46 +146,55 @@ Authentication Service ──[Event Publishing]──> Other Services
 
 ### 1. Environment Configuration
 
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your configuration
-nano .env  # or use your preferred editor
-```
+Use the .env.example file
 
 ### 2. Start the project using Docker
 
 ```bash
-# Build and start services
+# Build and start services (database + API)
 docker compose up --build
 
-# Start in detached mode
+# Start in detached mode (background)
 docker compose up -d
-
-# Stop services
-docker compose down
 
 # View logs
 docker compose logs -f
+
+# Stop services
+docker compose down
 ```
 
-#### 3. Runnin Tests
+The API will be available at:
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+
+Migrations run automatically when the API container starts.
+
+### 3. Running Tests
+
+All tests run in Docker - no local dependencies needed:
 
 ```bash
-docker compose run --rm test pytest tests/
-```
+# Run all tests
+docker compose run --rm --profile test test
 
-```bash
-docker compose run --rm test pytest tests/test_security.py
-```
-
-or using the script 
-
-```bash
+# Or use the test script
 ./run-tests.sh
+
+# Run specific test file
+./run-tests.sh tests/test_auth_register.py
+
+# Run with verbose output
+docker compose run --rm --profile test test pytest -v -s
 ```
 
+### 4. Running Migrations Manually
+
 ```bash
-./run-tests.sh tests/test_security.py
+# Run migrations manually
+docker compose run --rm --profile migrate migrate
+
+# Or execute in running container
+docker compose exec api alembic upgrade head
 ```

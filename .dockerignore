@@ -10,3 +10,4 @@
 !.pytest_cache/
 !requirements.txt
 !requirements-dev.txt
+!migrations

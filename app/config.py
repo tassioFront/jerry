@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # Database
-    DATABASE_URL: str = "postgresql://auth_user:auth_password@localhost:5432/auth_db"
+    DATABASE_URL: str = "postgresql://auth_user:auth_password@db:5432/auth_db"
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 0
     
