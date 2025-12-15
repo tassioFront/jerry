@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.database import get_db, Base
 from app.models.User import User
-from app.security import hash_password
+from app.utils.password import hash_password
 
 # Import fixtures from fixtures.py
 from tests.fixtures import (

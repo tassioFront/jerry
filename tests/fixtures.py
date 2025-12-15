@@ -2,7 +2,7 @@
 import pytest
 from uuid import uuid4
 from app.models.User import User
-from app.security import hash_password
+from app.utils.password import hash_password
 
 
 @pytest.fixture

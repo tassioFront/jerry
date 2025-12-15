@@ -3,11 +3,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from app.models.User import User
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
-from app.security import hash_password
 from app.exceptions import DuplicateEmailError, PasswordMismatchError
 from app.utils.tokens import generate_email_verification_token
 from app.utils.logger import logging
 from app.utils.mask_email import mask_email
+from app.utils.password import hash_password
 from app.events import EventPublisher, EventTypes
 
 

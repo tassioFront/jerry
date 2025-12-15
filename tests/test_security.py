@@ -2,14 +2,13 @@
 import pytest
 from datetime import timedelta, datetime, timezone
 from jose import jwt
-from app.security import (
-    hash_password,
-    verify_password,
+from app.utils.tokens import (
     create_access_token,
     create_refresh_token,
     decode_token,
     verify_token
 )
+from app.utils.password import (hash_password, verify_password)
 from app.exceptions import InvalidTokenError, ExpiredTokenError
 from app.config import settings
 
