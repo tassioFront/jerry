@@ -650,6 +650,116 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
 
 ---
 
+### Step 3.1: Implement User Profile Update (first_name, last_name, email)
+
+**What to do:**
+- Implement an endpoint to update basic user profile information **in a single transaction (all-or-nothing)**:
+  - `first_name`
+  - `last_name`
+  - `email`
+- Ensure that the update is **atomic and transactional** (all-or-nothing) and validated (e.g., email format, non-empty names).
+- Enforce **unique email** constraint (updating to an existing email should fail).
+- **Publish an event** (via the transactional outbox) whenever the profile is successfully updated.
+
+**Files to create/modify:**
+- `app/schemas.py` or `app/schemas/user.py` – Add:
+  - `UserProfileUpdateRequest` (fields: `first_name`, `last_name`, `email`)
+  - `UserProfileResponse` (updated user data)
+- `app/routers/auth.py` – Add a new endpoint, for example:
+  - `PUT /api/v1/auth/profile` or `PATCH /api/v1/auth/profile`
+- `app/services/auth_service.py` – Add:
+  - `AuthService.update_profile(...)` handling validation, DB update, and outbox write.
+- `app/models/OutboxEvent.py` (already exists) – reused to store the profile-updated event.
+- `tests/test_auth_profile_update.py` – New test file for profile update behavior.
+
+**Key implementations:**
+
+```python
+# app/schemas.py or app/schemas/user.py
+class UserProfileUpdateRequest(BaseModel):
+    first_name: constr(strip_whitespace=True, min_length=1)
+    last_name: constr(strip_whitespace=True, min_length=1)
+    email: EmailStr
+
+
+class UserProfileResponse(BaseModel):
+    user_id: UUID
+    first_name: str
+    last_name: str
+    email: EmailStr
+```
+
+```python
+# app/services/auth_service.py
+from app.events import EventTypes
+from app.models.OutboxEvent import OutboxEvent
+
+class AuthService:
+    @staticmethod
+    async def update_profile(
+        user: User,
+        request: UserProfileUpdateRequest,
+        db: Session,
+    ) -> UserProfileResponse:
+        # Validate email uniqueness (exclude current user)
+        existing = (
+            db.query(User)
+            .filter(User.email == request.email, User.id != user.id)
+            .first()
+        )
+        if existing:
+            raise DuplicateEmailError(request.email)
+
+        user.first_name = request.first_name
+        user.last_name = request.last_name
+        user.email = request.email
+
+        outbox_event = OutboxEvent(
+            event_type=EventTypes.USER_PROFILE_UPDATED,
+            aggregate_id=str(user.id),
+            payload={
+                "user_id": str(user.id),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+            },
+            status="pending",
+        )
+
+        try:
+            db.add(user)
+            db.add(outbox_event)
+            db.commit()
+            db.refresh(user)
+        except IntegrityError:
+            # Roll back so user changes and outbox entry are not partially applied
+            db.rollback()
+            raise
+
+        return UserProfileResponse(
+            user_id=user.id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+        )
+```
+
+**Unit Tests:**
+- Create `tests/test_auth_profile_update.py` with tests for:
+  - Successful profile update (all fields changed).
+  - Trying to update to an email that already exists (duplicate email).
+  - Invalid email format.
+  - Empty first_name / last_name.
+  - Outbox event creation (`USER_PROFILE_UPDATED` with correct payload).
+
+**✅ Verification:**
+
+```bash
+pytest tests/test_auth_profile_update.py -v
+```
+
+---
+
 ### Step 4: Create the Login Feature
 
 **What to do:**

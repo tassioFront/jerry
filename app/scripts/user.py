@@ -3,13 +3,15 @@ from uuid import UUID
 from app.database import SessionLocal
 from app.models.User import User
 
+# docker compose run --rm api python -m app.scripts.user
+
 # 1) Select all users
 def get_all_users():
     with SessionLocal() as db:
         users = db.query(User).all()
         print('get_all_users')
         for u in users:
-            print(u.id, u.email, u.is_email_verified)
+            print(u.id, u.first_name, u.email, u.is_email_verified)
         print('get_all_users end')
     
 

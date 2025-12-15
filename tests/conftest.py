@@ -101,6 +101,8 @@ def client(db_session: Session) -> TestClient:
 def valid_user_data() -> dict:
     """Provide valid registration data"""
     return {
+        "first_name": "Test",
+        "last_name": "User",
         "email": "test@example.com",
         "password": "SecurePassword123!",
         "password_confirmation": "SecurePassword123!"
@@ -120,6 +122,8 @@ def valid_user(db_session: Session, valid_user_data: dict) -> User:
     
     # Create new user
     user = User(
+        first_name="Existing",
+        last_name="User",
         email=valid_user_data["email"],
         password_hash=hash_password(valid_user_data["password"]),
         is_email_verified=False

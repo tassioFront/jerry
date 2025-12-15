@@ -37,7 +37,9 @@ class EventPublisher:
 # Event type constants
 class EventTypes:
     """Constants for event types"""
+
     USER_REGISTERED = "user.registered"
     USER_LOGGED_IN = "user.logged_in"
     EMAIL_VERIFIED = "user.email_verified"
+    USER_PROFILE_UPDATED = "user.profile_updated"
 

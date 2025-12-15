@@ -84,8 +84,8 @@ class TestRegisterDuplicateEmail:
         assert response.status_code == 400
         data = response.json()
         assert data["success"] is False
-        assert data["error"]["code"] == "DUPLICATE_EMAIL"
-        assert valid_user_data["email"] in data["error"]["message"]
+        assert data["error"][0]["code"] == "DUPLICATE_EMAIL"
+        assert valid_user_data["email"] in data["error"][0]["msg"]
     
     def test_register_duplicate_email_case_insensitive(
         self,
@@ -122,8 +122,7 @@ class TestRegisterPasswordValidation:
         assert response.status_code == 400
         data = response.json()
         assert data["success"] is False
-        # Should be either VALIDATION_ERROR or PASSWORD_MISMATCH
-        assert data["error"]["code"] in ["VALIDATION_ERROR", "PASSWORD_MISMATCH"]
+        assert data["error"][0]["code"] in ["PASSWORD_MISMATCH"]
     
     def test_register_weak_password(
         self,
@@ -139,7 +138,7 @@ class TestRegisterPasswordValidation:
         assert response.status_code == 400
         data = response.json()
         assert data["success"] is False
-        assert data["error"]["code"] in ["VALIDATION_ERROR", "WEAK_PASSWORD"]
+        assert data["error"][0]["code"] in ["WEAK_PASSWORD"]
     
     def test_register_password_too_short(self, client: TestClient):
         """Test that password shorter than 8 characters is rejected"""
@@ -215,7 +214,7 @@ class TestRegisterEmailValidation:
         assert response.status_code == 400
         data = response.json()
         assert data["success"] is False
-        assert data["error"]["code"] in ["VALIDATION_ERROR", "INVALID_EMAIL"]
+        assert data["error"][0]["code"] in ["VALIDATION_ERROR"]
     
     def test_register_empty_email(self, client: TestClient):
         """Test that empty email is rejected"""
@@ -232,6 +231,48 @@ class TestRegisterEmailValidation:
         response_data = response.json()
         assert response_data["success"] is False
         assert "error" in response_data
+
+
+class TestRegisterNameValidation:
+    """Tests for first_name and last_name validation."""
+
+    def test_register_rejects_multi_word_first_name(
+        self,
+        client: TestClient,
+        valid_user_data: dict,
+    ):
+        """Registration should reject first_name with more than one word."""
+        payload = {
+            **valid_user_data,
+            "first_name": "Multi Word",
+        }
+
+        response = client.post("/api/v1/auth/register", json=payload)
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["success"] is False
+        assert data["error"][0]["code"] == "MAX_ALLOWED_WORDS"
+
+
+    def test_register_rejects_multi_word_last_name(
+        self,
+        client: TestClient,
+        valid_user_data: dict,
+    ):
+        """Registration should reject last_name with more than one word."""
+        payload = {
+            **valid_user_data,
+            "last_name": "Multi Word",
+        }
+
+        response = client.post("/api/v1/auth/register", json=payload)
+
+        assert response.status_code == 400
+        data = response.json()
+        assert data["success"] is False
+        assert data["error"][0]["code"] == "MAX_ALLOWED_WORDS"
+
 
 
 class TestRegisterEventPublishing:

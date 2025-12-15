@@ -11,7 +11,9 @@ def sample_user_data() -> dict:
     return {
         "email": "sample@example.com",
         "password": "TestPassword123!",
-        "password_confirmation": "TestPassword123!"
+        "password_confirmation": "TestPassword123!",
+        "first_name": "nice",
+        "last_name": "name"
     }
 
 
@@ -21,7 +23,9 @@ def weak_password_data() -> dict:
     return {
         "email": "weak@example.com",
         "password": "weak",
-        "password_confirmation": "weak"
+        "password_confirmation": "weak",
+        "first_name": "nice",
+        "last_name": "name"
     }
 
 
@@ -31,7 +35,9 @@ def mismatched_password_data() -> dict:
     return {
         "email": "mismatch@example.com",
         "password": "SecurePassword123!",
-        "password_confirmation": "DifferentPassword123!"
+        "password_confirmation": "DifferentPassword123!",
+        "first_name": "nice",
+        "last_name": "name"
     }
 
 
@@ -41,6 +47,8 @@ def invalid_email_data() -> dict:
     return {
         "email": "not-an-email",
         "password": "SecurePassword123!",
-        "password_confirmation": "SecurePassword123!"
+        "password_confirmation": "SecurePassword123!",
+        "first_name": "nice",
+        "last_name": "name"
     }
 
