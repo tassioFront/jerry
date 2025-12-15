@@ -119,9 +119,7 @@ class TestValidationExceptionHandler:
             "field": "last_name"
         }
         assert data["error"][1] == {
-            "msg": [
-                "Password must be at least 8 characters long"
-            ],
+            "msg": "Password must be at least 8 characters long",
             "code": "WEAK_PASSWORD"
         }
 

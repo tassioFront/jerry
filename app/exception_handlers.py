@@ -13,73 +13,79 @@ from app.utils.logger import logging
 logger = logging.getLogger(__name__)
 
 
+def _parse_custom_value_error(message: str) -> dict[str, Any] | None:
+    """
+    Parse custom ValueError messages of the form:
+        "Value error, ('ERROR_CODE', 'Message 1', ...)"
+        eg. ValueError(WEAK_PASSWORD, "weak password")
+
+    Returns a dict with our standardized structure or None
+    if the message cannot be parsed.
+    """
+    if "Value error," not in message:
+        return None
+
+    try:
+        raw_tuple = message.split("Value error,", 1)[1].strip()
+        parsed = ast.literal_eval(raw_tuple)
+        code, msgs = parsed
+        return {
+            "msg": msgs,
+            "code": code,
+        }
+    except (ValueError, SyntaxError, TypeError):
+        logger.exception(
+            "Failed to parse custom ValueError message: %s",
+            message,
+        )
+        return None
+
+
+def _build_custom_error(error: dict[str, Any]) -> dict[str, Any] | None:
+    """
+    Translate a single Pydantic error dict into our custom error format.
+
+    Returns None when the error type is not supported and should be ignored.
+    """
+    error_type = error.get("type")
+    error_msg: str = error.get("msg", "UNKNOWN_ERROR")
+
+    custom_value_error = _parse_custom_value_error(error_msg)
+    if custom_value_error is not None:
+        return custom_value_error
+
+    if error_type == "missing":
+        field: tuple = error["loc"]
+        return {
+            "msg": f"{field[1]} is required",
+            "code": "MISSING_FIELD",
+            "field": field[1],
+        }
+
+    if error_type == "value_error":
+        # e.g. email format, auto value error raised by FastAPI/Pydantic
+        field: tuple = error["loc"]
+        return {
+            "field": field[1],
+            "msg": error_msg,
+            "code": "VALIDATION_ERROR",
+        }
+
+    return None
+
+
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    logger.info('exc')
-    logger.info(exc.errors())
     """
     Handle Pydantic validation errors (RequestValidationError)
     """
-    errors = exc.errors()
-    # error_messages: list[str] = []
     custom_error: list[dict[str, Any]] = []
 
-    logger.info("exception_handler[RequestValidationError] - init")
-
-    for error in errors:
-        logger.debug(error)
-
-        error_msg: str = error.get("msg", "UNKNOWN_ERROR")
-
-        if "Value error," in error_msg:
-            # It is expected all ValueError instances raise a TYPE_ERROR and msg
-            # such as ValueError(WEAK_PASSWORD, "weak password")
-            logger.debug(
-                "exception_handler[RequestValidationError] - ValueError instance raised"
-            )
-            msg = ast.literal_eval(error_msg.split("Value error,", 1)[1].strip())
-            logger.debug(msg[0])
-            error_obj = {
-                "msg": msg[1:],
-                "code": msg[0],
-            }
-            logger.debug("ERROR")
+    for error in exc.errors():
+        error_obj = _build_custom_error(error)
+        if error_obj is not None:
             custom_error.append(error_obj)
-
-        elif error.get("type") == "missing":
-            field: tuple = error["loc"]
-            error_obj = {
-                "msg": f"{field[1]} is required",
-                "code": "MISSING_FIELD",
-                "field": field[1],
-            }
-            logger.debug(
-                "exception_handler[RequestValidationError] - It is missing type %s",
-                field[1],
-            )
-            custom_error.append(error_obj)
-
-        elif error.get("type") == "value_error":
-            # eg. email format, auto value error raised by FastApi
-            field: tuple = error["loc"]
-            msg = error["msg"]
-            error_obj = {
-                "field": field[1],
-                "msg": msg,
-                "code": "VALIDATION_ERROR",
-            }
-            logger.debug(
-                "exception_handler[RequestValidationError] - It is value_error type %s",
-                field[1],
-            )
-            custom_error.append(error_obj)
-
-        else:
-            logger.debug(
-                "exception_handler[RequestValidationError] - Unexpected type: %s",
-                error.get("type"),
-            )
 
     return JSONResponse(
         status_code=400,
