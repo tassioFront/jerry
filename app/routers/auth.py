@@ -6,7 +6,7 @@ from app.schemas.common import ResponseModel
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
 from app.services.auth_service import AuthService
 
-router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
+router = APIRouter(prefix="/v1/auth", tags=["authentication"])
 
 
 @router.post(
