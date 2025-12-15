@@ -38,7 +38,7 @@ class UserRegisterRequest(BaseModel):
         """
         if len(v) < 8:
             raise ValueError(
-                "WEAK_PASSWORD",
+                ErrorCode.WEAK_PASSWORD,
                 "Password must be at least 8 characters long",
             )
         
@@ -49,7 +49,7 @@ class UserRegisterRequest(BaseModel):
         
         if not (has_upper and has_lower and has_digit and has_special):
             raise ValueError(
-                "WEAK_PASSWORD",
+                ErrorCode.WEAK_PASSWORD,
                 "Password must contain at least one uppercase letter,"
                 " one lowercase letter, one number, and one special character",
             )
