@@ -1,6 +1,6 @@
 """Registration-related schemas"""
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserRegisterRequest(BaseModel):
@@ -22,7 +22,7 @@ class UserRegisterRequest(BaseModel):
         - At least 1 special character
         """
         if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters long")
+            raise ValueError("WEAK_PASSWORD","Password must be at least 8 characters long")
         
         has_upper = any(c.isupper() for c in v)
         has_lower = any(c.islower() for c in v)
@@ -31,18 +31,13 @@ class UserRegisterRequest(BaseModel):
         
         if not (has_upper and has_lower and has_digit and has_special):
             raise ValueError(
-                "Password must contain at least one uppercase letter, "
+                "INVALID_EMAIL",
+                "Password must contain at least one uppercase letter,"
                 "one lowercase letter, one number, and one special character"
             )
         
         return v
     
-    @model_validator(mode='after')
-    def validate_passwords_match(self):
-        """Validate that password and password_confirmation match"""
-        if self.password != self.password_confirmation:
-            raise ValueError("Password confirmation does not match")
-        return self
 
 
 class UserRegisterResponse(BaseModel):

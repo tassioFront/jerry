@@ -1,4 +1,6 @@
 """FastAPI application initialization"""
+import logging
+import ast
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,6 +11,8 @@ from app.config import settings
 from app.routers import auth
 from app.exceptions import AuthException, DuplicateEmailError
 
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Auth Service",
@@ -53,20 +57,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_code = "VALIDATION_ERROR"
     
     for error in errors:
-        field = ".".join(str(loc) for loc in error.get("loc", []))
-        msg = error.get("msg", "Validation error")
-        error_messages.append(msg)
+        errorMsg: str = error.get("msg", "UNKNOWN_ERROR")
         
-        # Determine specific error code based on message content
-        msg_lower = msg.lower()
-        if "password confirmation" in msg_lower or "does not match" in msg_lower:
-            error_code = "PASSWORD_MISMATCH"
-        elif "password" in msg_lower and ("weak" in msg_lower or "must contain" in msg_lower or "at least" in msg_lower):
-            error_code = "WEAK_PASSWORD"
-        elif "email" in msg_lower or "value is not a valid" in msg_lower:
-            error_code = "INVALID_EMAIL"
+        if ("Value error," in errorMsg):  
+            # It is expected all ValueError instance raise a TYPE_ERROR and msg such as ValueError(WEAK_PASSWORD, "weak password")        
+            msg =  ast.literal_eval(errorMsg.split("Value error,", 1)[1].strip())
+            error_code = msg[0]
+            error_messages.append(msg[1:])
+
     
-    message = "; ".join(error_messages) if error_messages else "Validation error"
+    message = error_messages if error_messages else error["msg"]
     
     return JSONResponse(
         status_code=400,

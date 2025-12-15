@@ -1,4 +1,5 @@
-"""Event publishing for microservices communication"""
+"""[In progress] Event publishing for microservices communication"""
+import logging
 from typing import Dict, Any
 from datetime import datetime, timezone
 
@@ -14,10 +15,6 @@ class EventPublisher:
         Args:
             event_type: Type of event (e.g., "user.registered")
             data: Event data payload
-            
-        Note:
-            This is a placeholder implementation. In production, this would
-            publish to Kafka, RabbitMQ, or another message broker.
         """
         event = {
             "event_type": event_type,
@@ -33,7 +30,6 @@ class EventPublisher:
         # await rabbitmq_channel.publish("auth.events", event)
         
         # Log the event for development/debugging
-        import logging
         logger = logging.getLogger(__name__)
         logger.info(f"Event published: {event_type}", extra={"event": event})
 

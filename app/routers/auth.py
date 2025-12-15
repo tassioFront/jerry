@@ -33,7 +33,6 @@ async def register(
         PasswordMismatchError: If passwords don't match
         ValidationError: If validation fails
     """
-    # Delegate business logic to service layer
     response_data = await AuthService.register_user(request, db)
     
     return ResponseModel(
