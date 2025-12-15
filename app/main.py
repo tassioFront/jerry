@@ -1,15 +1,16 @@
 """FastAPI application initialization"""
-import ast
-from fastapi import FastAPI, Request, APIRouter
-from fastapi.exceptions import RequestValidationError
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from datetime import datetime, timezone
-from sqlalchemy.exc import IntegrityError
-from app.config import settings
-from app.routers import auth, health
-from app.exceptions import AuthException, DuplicateEmailError
 
+from sqlalchemy.exc import IntegrityError
+
+from app.config import settings
+from app.exception_handlers import register_exception_handlers
+from app.exceptions import AuthException, DuplicateEmailError
+from app.routers import auth, health
 
 app = FastAPI(
     title="Auth Service",
@@ -34,6 +35,9 @@ prefix.include_router(health.router)
 
 app.include_router(prefix)
 
+# Register global exception handlers
+register_exception_handlers(app)
+
 # Exception handler for custom AuthException
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException):
@@ -43,41 +47,6 @@ async def auth_exception_handler(request: Request, exc: AuthException):
         content={
             "success": False,
             "error": exc.detail,
-            "timestamp": datetime.now(timezone.utc).isoformat() + "Z"
-        }
-    )
-
-
-# Exception handler for validation errors (Pydantic)
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle Pydantic validation errors - convert 422 to 400"""
-    # Extract error messages from validation errors
-    errors = exc.errors()
-    error_messages = []
-    error_code = "VALIDATION_ERROR"
-    
-    for error in errors:
-        errorMsg: str = error.get("msg", "UNKNOWN_ERROR")
-        
-        if ("Value error," in errorMsg):  
-            # It is expected all ValueError instance raise a TYPE_ERROR and msg such as ValueError(WEAK_PASSWORD, "weak password")        
-            msg =  ast.literal_eval(errorMsg.split("Value error,", 1)[1].strip())
-            error_code = msg[0]
-            error_messages.append(msg[1:])
-
-    
-    message = error_messages if error_messages else error["msg"]
-    
-    return JSONResponse(
-        status_code=400,
-        content={
-            "success": False,
-            "error": {
-                "code": error_code,
-                "message": message,
-                "details": {}
-            },
             "timestamp": datetime.now(timezone.utc).isoformat() + "Z"
         }
     )

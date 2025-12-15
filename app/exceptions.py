@@ -12,23 +12,12 @@ class AuthException(HTTPException):
         message: str,
         details: Optional[dict] = None
     ):
-        super().__init__(status_code=status_code, detail={
-            "code": error_code,
-            "message": message,
-            "details": details or {}
-        })
-
-
-class ValidationError(AuthException):
-    """Input validation error"""
-    def __init__(self, message: str, details: Optional[dict] = None):
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            error_code="VALIDATION_ERROR",
-            message=message,
-            details=details
-        )
-
+        super().__init__(status_code=status_code, detail=[
+                {
+                    "msg": message,
+                    "code": error_code
+                } 
+        ])
 
 class DuplicateEmailError(AuthException):
     """Email already registered"""
@@ -49,28 +38,6 @@ class PasswordMismatchError(AuthException):
             error_code="PASSWORD_MISMATCH",
             message="Password confirmation does not match",
             details={"field": "password_confirmation", "issue": "Passwords do not match"}
-        )
-
-
-class WeakPasswordError(AuthException):
-    """Password does not meet requirements"""
-    def __init__(self, message: str = "Password does not meet security requirements"):
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            error_code="WEAK_PASSWORD",
-            message=message,
-            details={"field": "password", "issue": "Password too weak"}
-        )
-
-
-class InvalidEmailError(AuthException):
-    """Invalid email format"""
-    def __init__(self, email: str):
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            error_code="INVALID_EMAIL",
-            message=f"Invalid email format: {email}",
-            details={"field": "email", "issue": "Invalid email format"}
         )
 
 
