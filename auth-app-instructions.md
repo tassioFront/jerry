@@ -1068,31 +1068,83 @@ This service is designed for event-driven microservices architecture. Events are
 # app/events.py
 class EventPublisher:
     @staticmethod
-    async def publish(event: dict) -> None:
-        """Publish event to message broker"""
+    async def publish(event_type: str, data: dict) -> None:
+        \"\"\"Publish event to message broker\"\"\"
         # Kafka, RabbitMQ, or event bus implementation
         pass
 
-# In routers
-async def register(...):
+# In services (example: user registration)
+from app.events import EventTypes
+from app.models.OutboxEvent import OutboxEvent
+
+async def register_user(..., db: Session) -> None:
     user = create_user(...)
-    await EventPublisher.publish({
-        "event_type": "user.registered",
-        "data": {"user_id": str(user.id), "email": user.email}
-    })
+
+    outbox_event = OutboxEvent(
+        event_type=EventTypes.USER_REGISTERED,
+        aggregate_id=str(user.id),
+        payload={
+            "user_id": str(user.id),
+            "email": user.email,
+            "is_email_verified": user.is_email_verified,
+            "email_verification_token": email_verification_token,
+        },
+        status="pending",
+    )
+    db.add(user)
+    db.add(outbox_event)
+    db.commit()
 ```
 
-### Integration with Other Services
+### Transactional Outbox Pattern
 
-Other microservices can consume events:
+This service uses the **transactional outbox** pattern for reliable event publishing:
 
-```python
-# In another service
-async def handle_user_registered(event: dict):
-    user_id = event["data"]["user_id"]
-    email = event["data"]["email"]
-    # Send verification email, create profile, etc.
-```
+- **Outbox table**: `outbox_event` (model: `OutboxEvent`) stores events in the same database as the auth data.
+- **Atomicity**: domain changes (e.g., creating a `User`) and the corresponding `OutboxEvent` row are written in the **same database transaction**.
+- **Asynchronous dispatch**: a separate worker process reads `pending` events, publishes them via `EventPublisher`, and marks them as `published` or `failed`.
+
+Key components:
+
+- `app/models/OutboxEvent.py` – ORM model for the `outbox_event` table.
+- `migrations/versions/003_create_outbox_event_table.py` – Alembic migration that creates the table and indexes.
+- `app/services/auth_service.py` – registration flow persists a `USER_REGISTERED` outbox event instead of publishing directly.
+- `app/scripts/outbox_worker.py` – async worker that:
+  - Polls `outbox_event` rows with `status="pending"`,
+  - Calls `EventPublisher.publish(event.event_type, event.payload)`,
+  - Updates `status`, `published_at`, `retry_count`, and `last_error`.
+
+#### Running the Outbox Worker
+
+You can run the worker in two primary ways:
+
+- **Standalone process (local development)**:
+
+  ```bash
+  python -m app.scripts.outbox_worker
+  ```
+
+- **As a Docker Compose service (configured in this repo)**:
+
+  The `docker-compose.yml` file defines an `outbox-worker` service that:
+
+  - Uses the same image and environment variables as the `api` service,
+  - Depends on the `db` service being healthy and migrations having run,
+  - Continuously drains and publishes events from the outbox.
+
+  To start the full stack in development:
+
+  ```bash
+  docker-compose up --build
+  ```
+
+  To follow worker logs:
+
+  ```bash
+  docker-compose logs -f outbox-worker
+  ```
+
+This setup ensures that **user creation and event recording are atomic**, and that event delivery to the message broker is **retriable and observable** through the outbox.
 
 ---
 
