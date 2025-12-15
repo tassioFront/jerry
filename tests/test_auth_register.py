@@ -2,7 +2,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.models import User
+from app.models.User import User
 from app.exceptions import DuplicateEmailError, PasswordMismatchError
 from app.events import EventPublisher, EventTypes
 

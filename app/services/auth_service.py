@@ -1,7 +1,7 @@
 """Authentication business logic"""
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from app.models import User
+from app.models.User import User
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
 from app.security import hash_password
 from app.exceptions import DuplicateEmailError, PasswordMismatchError

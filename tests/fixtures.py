@@ -1,7 +1,7 @@
 """Shared test fixtures for authentication tests"""
 import pytest
 from uuid import uuid4
-from app.models import User
+from app.models.User import User
 from app.security import hash_password
 
 

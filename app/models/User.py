@@ -4,11 +4,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import String, Boolean, DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
-
-
-class Base(DeclarativeBase):
-    """Base class for all database models"""
-    pass
+from app.models.Base import Base
 
 
 class User(Base):
