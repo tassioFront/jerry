@@ -1,5 +1,4 @@
 """FastAPI application initialization"""
-import logging
 import ast
 from fastapi import FastAPI, Request, APIRouter
 from fastapi.exceptions import RequestValidationError
@@ -11,8 +10,6 @@ from app.config import settings
 from app.routers import auth, health
 from app.exceptions import AuthException, DuplicateEmailError
 
-
-logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Auth Service",
