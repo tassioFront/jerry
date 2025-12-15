@@ -9,6 +9,8 @@ class UserResponse(BaseModel):
     """Response schema for user information"""
     id: UUID
     email: str
+    first_name: str
+    last_name: str
     is_email_verified: bool
     email_verified_at: Optional[datetime]
     created_at: datetime

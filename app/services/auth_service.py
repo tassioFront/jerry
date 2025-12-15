@@ -40,6 +40,8 @@ class AuthService:
         password_hash = hash_password(request.password)
         user = User(
             email=request.email,
+            first_name=request.first_name,
+            last_name=request.last_name,
             password_hash=password_hash,
             is_email_verified=False,
             email_verified_at=None
@@ -60,6 +62,7 @@ class AuthService:
                 raise DuplicateEmailError(request.email)
             raise
         
+        # [to-do] It should intergrate with MailGun
         email_verification_token = generate_email_verification_token(
             str(user.id),
             user.email
@@ -70,7 +73,7 @@ class AuthService:
             {
                 "user_id": str(user.id),
                 "email": user.email,
-                "email_verification_token": email_verification_token
+                "is_email_verified": user.is_email_verified
             }
         )
         logger.info(f"[REGISTER_lOG] User event published: {user.id} - {hiddenEmail}")

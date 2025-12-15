@@ -5,6 +5,8 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 class UserRegisterRequest(BaseModel):
     """Request schema for user registration"""
+    first_name: str
+    last_name: str
     email: EmailStr
     password: str
     password_confirmation: str
