@@ -2,11 +2,16 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, status, Depends
 
-from app.dependencies import DatabaseSession, get_current_user
+from app.dependencies import DatabaseSession, NotClientOnly, get_current_user, require_user_type
 from app.schemas.common import ResponseModel
-from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse
+from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse, UserProfileGetUsersRequest
 from app.services.profile_service import ProfileService
-from app.models.User import User
+from app.models.User import User, UserType
+from app.schemas.pagination import PaginatedResponse
+
+from typing import TypeVar
+
+T = TypeVar("T")
 
 router = APIRouter(tags=["authentication"])
 
@@ -32,9 +37,33 @@ async def update_profile(
         db=db,
     )
 
-    return ResponseModel(
+    return ResponseModel[UserProfileResponse](
         success=True,
         data=response_data,
         timestamp=datetime.now(timezone.utc).isoformat() + "Z",
     )
 
+
+UserAdminGuard = require_user_type([UserType.SUDO, UserType.ADMIN, UserType.AUDIT])
+
+
+@router.get(
+    "/v1/profile/internal",
+    status_code=status.HTTP_200_OK,
+    response_model=ResponseModel[PaginatedResponse[UserProfileResponse]],
+)
+async def list_users(
+    request: UserProfileGetUsersRequest,
+    db: DatabaseSession,
+    # current_user: User = Depends(NotClientOnly),
+) -> ResponseModel[PaginatedResponse[UserProfileResponse]]:
+    response_data = await ProfileService.internal_get_users(
+        request=request,
+        db=db,
+    )
+
+    return ResponseModel(
+        success=True,
+        data=response_data,
+        timestamp=datetime.now(timezone.utc).isoformat() + "Z",
+    )

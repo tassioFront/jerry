@@ -1,12 +1,15 @@
+from app.schemas.pagination import PaginatedResponse
+from app.utils.paginator import paginate_query
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from app.exceptions import DuplicateEmailError
 from app.models.User import User
 from app.models.OutboxEvent import OutboxEvent
-from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse
+from app.schemas.profile import UserProfileGetUsersRequest, UserProfileUpdateRequest, UserProfileResponse
 from app.utils.logger import logging
 from app.events import EventTypes
+from fastapi import Query
 
 
 logger = logging.getLogger(__name__)
@@ -61,13 +64,24 @@ class ProfileService:
             db.add(outbox_event)
             db.commit()
             db.refresh(user)
+            logger.debug(f"user {user.id} update")
         except IntegrityError:
+            logger.debug(f"user {user.id} NOT update")
             db.rollback()
             raise
 
         return UserProfileResponse(
-            user_id=user.id,
+            id=user.id,
             first_name=user.first_name,
             last_name=user.last_name,
             email=user.email,
+            type=user.type
         )
+
+    @staticmethod
+    async def internal_get_users(
+        request: UserProfileGetUsersRequest,
+        db: Session,
+    ) -> PaginatedResponse[UserProfileResponse]:
+        q: Query = db.query(User).order_by(User.created_at.desc())
+        return paginate_query(query=q,page=request.page, page_size=request.page_size, schema_cls=UserProfileResponse)

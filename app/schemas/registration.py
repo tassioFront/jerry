@@ -1,7 +1,11 @@
 """Registration-related schemas"""
 from uuid import UUID
+from app.models.User import UserType
 from app.schemas.error_code import ErrorCode
 from pydantic import BaseModel, EmailStr, field_validator, constr
+from typing import Optional
+
+
 
 
 class UserRegisterRequest(BaseModel):
@@ -11,7 +15,9 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str
     password_confirmation: str
-    
+    type: Optional[UserType] = UserType.CLIENT
+
+
     @field_validator("first_name", "last_name")
     @classmethod
     def validate_single_word_name(cls, v: str) -> str:

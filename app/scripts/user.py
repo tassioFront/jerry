@@ -10,6 +10,11 @@ def get_all_users():
     with SessionLocal() as db:
         users = db.query(User).all()
         print('get_all_users')
+
+        if (len(users) == 0):
+            print('No users')
+            return
+
         for u in users:
             print(u.id, u.first_name, u.email, u.is_email_verified)
         print('get_all_users end')

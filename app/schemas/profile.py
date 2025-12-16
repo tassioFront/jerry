@@ -1,6 +1,8 @@
 from uuid import UUID
+from typing import Optional
+from app.models.User import UserType
 from app.schemas.error_code import ErrorCode
-from pydantic import BaseModel, EmailStr, field_validator, constr
+from pydantic import BaseModel, EmailStr, field_validator, constr, Field, ConfigDict
 
 
 class UserProfileUpdateRequest(BaseModel):
@@ -26,9 +28,20 @@ class UserProfileUpdateRequest(BaseModel):
 
 class UserProfileResponse(BaseModel):
     """Response schema for updated user profile information."""
+    model_config = ConfigDict(from_attributes=True)
 
-    user_id: UUID
+    id: UUID
     first_name: str
     last_name: str
     email: EmailStr
+    type: UserType
+
+
+class UserProfileGetUsersRequest(BaseModel):
+    page: int = Field(1, ge=1, description="Page number starting at 1")
+    page_size: int = Field(20, ge=1, le=100, description="Items per page")
+    email: Optional[str] = Field(None, description="Optional filter by email (substring or exact)")
+    type: Optional[str] = Field(None, description='Optional filter by user type: "sudo", "admin", "audit", "client"')
+    user_id: Optional[UUID] = Field(None, description="Optional filter by specific user id")
+
 

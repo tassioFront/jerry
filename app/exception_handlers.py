@@ -63,7 +63,7 @@ def _build_custom_error(error: dict[str, Any]) -> dict[str, Any] | None:
             "field": field[1],
         }
 
-    if error_type == "value_error":
+    if error_type == "value_error" or error_type == 'enum':
         # e.g. email format, auto value error raised by FastAPI/Pydantic
         field: tuple = error["loc"]
         return {
