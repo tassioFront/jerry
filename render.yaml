@@ -1,0 +1,149 @@
+services:
+  - type: web
+    name: jerry
+    env: docker
+    plan: free        # or standard / plus, etc.
+    region: oregon       # pick your preferred region
+    runtime: docker
+    dockerfilePath: Dockerfile
+
+    startCommand: |
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      # --- Database configuration ---
+      # Render Postgres connection string (overrides local-style DATABASE_URL)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: auth-db
+          property: connectionString
+
+      # Optional extra DB tuning if your code reads them
+      - key: DATABASE_POOL_SIZE
+        value: "20"
+      - key: DATABASE_MAX_OVERFLOW
+        value: "0"
+
+      # --- PostgreSQL config (only needed if your code reads them) ---
+      - key: POSTGRES_USER
+        value: auth_user
+      - key: POSTGRES_PASSWORD
+        sync: false        # set real password in Render dashboard
+      - key: POSTGRES_DB
+        value: auth_db
+      - key: POSTGRES_PORT
+        value: "5432"
+
+      # --- JWT configuration ---
+      - key: JWT_SECRET_KEY
+        sync: false        # set secure value in Render dashboard
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_ACCESS_TOKEN_EXPIRE_HOURS
+        value: "24"
+      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      # --- Application configuration ---
+      - key: ENVIRONMENT
+        value: production   # override 'development' for Render
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-url.com
+
+      # --- Email configuration ---
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false        # your-email@gmail.com
+      - key: SMTP_PASSWORD
+        sync: false        # app password or provider secret
+      - key: SMTP_FROM_EMAIL
+        sync: false        # noreply@yourservice.com
+
+      # --- Service info ---
+      - key: SERVICE_NAME
+        value: Jerry
+      - key: SERVICE_VERSION
+        value: 0.0.1
+
+      # --- First user bootstrap (used by your app logic) ---
+
+    startCommand: |
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SERVICE_NAME
+        value: auth-service
+      - key: SERVICE_VERSION
+        value: 1.0.0
+
+      # JWT
+      - key: JWT_SECRET_KEY
+        sync: false          # set in Render dashboard
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_ACCESS_TOKEN_EXPIRE_HOURS
+        value: "24"
+      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
+      # Database (will be filled from the Render Postgres)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: auth-db
+          property: connectionString
+
+    healthCheckPath: /api/health
+
+databases:
+  - name: auth-db
+    databaseName: authdb
+    user: authuser
+    plan: starter
+    ipAllowList: []       # or add your IPs for direct access
+
+  - type: worker
+    name: auth-outbox-worker
+    env: docker
+    plan: starter
+    region: oregon
+    buildCommand: |
+      docker build -t auth-outbox-worker -f Dockerfile .
+    startCommand: |
+      sh -c "alembic upgrade head && python -m app.scripts.outbox_worker"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SERVICE_NAME
+        value: auth-outbox-worker
+      - key: SERVICE_VERSION
+        value: 1.0.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: auth-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_ACCESS_TOKEN_EXPIRE_HOURS
+        value: "24"
+      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+
