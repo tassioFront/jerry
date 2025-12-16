@@ -4,11 +4,7 @@ services:
     env: docker
     plan: free        # or standard / plus, etc.
     region: oregon       # pick your preferred region
-    runtime: python
     dockerfilePath: Dockerfile
-
-    startCommand: |
-      uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
     envVars:
       # --- Database configuration ---
