@@ -1,5 +1,6 @@
 """Application-wide exception handlers."""
 import ast
+import json
 from datetime import datetime, timezone
 from typing import Any
 
@@ -95,7 +96,6 @@ async def validation_exception_handler(
             "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
         },
     )
-
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register all global exception handlers on the given FastAPI app."""
