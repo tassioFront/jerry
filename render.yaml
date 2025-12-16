@@ -72,39 +72,6 @@ services:
       - key: SERVICE_VERSION
         value: 0.0.1
 
-      # --- First user bootstrap (used by your app logic) ---
-
-    startCommand: |
-      uvicorn app.main:app --host 0.0.0.0 --port $PORT
-
-    envVars:
-      - key: ENVIRONMENT
-        value: production
-      - key: DEBUG
-        value: "False"
-      - key: LOG_LEVEL
-        value: INFO
-      - key: SERVICE_NAME
-        value: auth-service
-      - key: SERVICE_VERSION
-        value: 1.0.0
-
-      # JWT
-      - key: JWT_SECRET_KEY
-        sync: false          # set in Render dashboard
-      - key: JWT_ALGORITHM
-        value: HS256
-      - key: JWT_ACCESS_TOKEN_EXPIRE_HOURS
-        value: "24"
-      - key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
-        value: "7"
-
-      # Database (will be filled from the Render Postgres)
-      - key: DATABASE_URL
-        fromDatabase:
-          name: auth-db
-          property: connectionString
-
     healthCheckPath: /api/health
 
 databases:
