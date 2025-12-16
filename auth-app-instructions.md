@@ -671,7 +671,7 @@ class UserProfileUpdateRequest(BaseModel):
 
 
 class UserProfileResponse(BaseModel):
-    user_id: UUID
+    id: UUID
     first_name: str
     last_name: str
     email: EmailStr
@@ -894,6 +894,30 @@ curl -X POST http://localhost:8000/api/v1/auth/refresh \
 - Postman collection (optional)
 
 ---
+
+
+#### Step 7: User control
+
+Apply operations (GET, POST, UPDATE, DELETE) data from the service
+## Internal endpoints 
+
+### User retrieve
+It will return a user list (paginated)
+
+### Who can retrieve/edit the data? 
+Only authenticated users with "sudo", "admin", or "audit". Users with the type "client" are not allowed.
+
+### Requirements
+
+Add a new field to the database: type. Which will accept "sudo", "admin",  "audit", and "client"
+
+#### type rules
+
+Sudo = First user created on the server. It has all control over other users (GET, PUT, DELETE, CREATE)
+Admin = Admin user to control other users. It has all control over other users (GET, PUT, DELETE, CREATE), less Sudo
+Audit = Audit user to read-only access.  Only the  GET method
+Client = final users. They cannot do any operation regarding other users
+
 
 ## 🧪 Testing
 

@@ -1,13 +1,22 @@
+# Ignore everything by default
 *
-!__pycache__
-!*.pyc
-!*.pyo
-!*.pyd
-!.Python
-!venv/
-!.venv/
-!.env
-!.pytest_cache/
+
+# Allow Python source code and key project dirs
+!main.py
+!app/
+!scripts/
+!migrations/
+!tests/
+
+# Allow dependency files
 !requirements.txt
 !requirements-dev.txt
-!migrations
+
+# Allow alembic and Docker config if needed
+!alembic.ini
+!docker-entrypoint.sh
+!Dockerfile
+!render.yaml
+
+# Allow these only if you actually need them inside the image
+!.env.example

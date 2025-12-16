@@ -177,7 +177,7 @@ All tests run in Docker - no local dependencies needed:
 
 ```bash
 # Run all tests
-docker compose run --rm --profile test test
+docker compose run --rm test test
 
 # Or use the test script
 ./run-tests.sh
@@ -186,14 +186,14 @@ docker compose run --rm --profile test test
 ./run-tests.sh tests/test_auth_register.py
 
 # Run with verbose output
-docker compose run --rm --profile test test pytest -v -s
+docker compose run --rm test test pytest -v -s
 ```
 
 ### 4. Running Migrations Manually
 
 ```bash
 # Run migrations manually
-docker compose run --rm --profile migrate migrate
+docker compose run --rm migrate migrate
 
 # Or execute in running container
 docker compose exec api alembic upgrade head
