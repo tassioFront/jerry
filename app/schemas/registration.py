@@ -15,7 +15,6 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str
     password_confirmation: str
-    type: Optional[UserType] = UserType.CLIENT
 
 
     @field_validator("first_name", "last_name")
@@ -61,7 +60,10 @@ class UserRegisterRequest(BaseModel):
             )
         
         return v
-    
+
+
+class InternalUserRegisterRequest(UserRegisterRequest):
+    type: UserType
 
 
 class UserRegisterResponse(BaseModel):

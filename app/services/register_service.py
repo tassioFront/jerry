@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.models.User import User
+from app.models.User import User, UserType
 from app.models.OutboxEvent import OutboxEvent
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
 from app.exceptions import DuplicateEmailError, PasswordMismatchError
@@ -20,6 +20,7 @@ class RegisterService:
     async def register_user(
         request: UserRegisterRequest,
         db: Session,
+        type: UserType
     ) -> UserRegisterResponse:
         """
         Args:
@@ -46,6 +47,7 @@ class RegisterService:
             password_hash=password_hash,
             is_email_verified=False,
             email_verified_at=None,
+            type=type
         )
 
         # Generate email verification token that will be included in the outbox event payload
