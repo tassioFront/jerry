@@ -1,6 +1,7 @@
 """Custom exceptions for the authentication service"""
 from typing import Optional
 from fastapi import HTTPException, status
+from app.schemas.error_code import ErrorCode
 
 
 class AuthException(HTTPException):
@@ -24,7 +25,7 @@ class DuplicateEmailError(AuthException):
     def __init__(self, email: str):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            error_code="DUPLICATE_EMAIL",
+            error_code=ErrorCode.DUPLICATE_EMAIL,
             message=f"Email {email} is already registered",
             details={"field": "email", "issue": "Email already exists"}
         )
@@ -35,7 +36,7 @@ class PasswordMismatchError(AuthException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            error_code="PASSWORD_MISMATCH",
+            error_code=ErrorCode.PASSWORD_MISMATCH,
             message="Password confirmation does not match",
             details={"field": "password_confirmation", "issue": "Passwords do not match"}
         )
@@ -49,7 +50,7 @@ class UserNotFoundError(AuthException):
             message = f"User with email {email} not found"
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            error_code="USER_NOT_FOUND",
+            error_code=ErrorCode.USER_NOT_FOUND,
             message=message,
             details={"field": "email", "issue": "User does not exist"}
         )
@@ -71,7 +72,7 @@ class InvalidTokenError(AuthException):
     def __init__(self, message: str = "Invalid or malformed token"):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            error_code="INVALID_TOKEN",
+            error_code=ErrorCode.INVALID_TOKEN,
             message=message,
             details={"field": "token", "issue": "Token is invalid"}
         )
