@@ -3,13 +3,7 @@ services:
     env: docker
     plan: free
     region: oregon
-    runtime: docker
-
-    buildCommand: |
-      docker build -t auth-api -f Dockerfile .
-
-    startCommand: |
-      python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: backend/Dockerfile
 
     envVars:
       # --- Database configuration ---
