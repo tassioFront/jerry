@@ -72,7 +72,4 @@ services:
 
 databases:
   - name: auth-db
-    databaseName: authdb
-    user: authuser
-    plan: starter
-    ipAllowList: []       # or add your IPs for direct access
+    plan: free
