@@ -1,14 +1,12 @@
-"""Authentication endpoints: register, login, token validation, profile update"""
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status
 
-from app.dependencies import DatabaseSession, get_current_user
+from app.dependencies import DatabaseSession
 from app.schemas.common import ResponseModel
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
-from app.schemas.user import UserProfileUpdateRequest, UserProfileResponse
+from app.schemas.user import UserProfileUpdateRequest
 from app.services.auth_service import AuthService
-from app.models.User import User
 
 router = APIRouter(prefix="/v1/auth", tags=["authentication"])
 
@@ -44,33 +42,3 @@ async def register(
         data=response_data,
         timestamp=datetime.now(timezone.utc).isoformat() + "Z",
     )
-
-
-@router.put(
-    "/profile",
-    status_code=status.HTTP_200_OK,
-    response_model=ResponseModel[UserProfileResponse],
-)
-async def update_profile(
-    request: UserProfileUpdateRequest,
-    db: DatabaseSession,
-    current_user: User = Depends(get_current_user),
-) -> ResponseModel[UserProfileResponse]:
-    """
-    Update the authenticated user's basic profile information.
-
-    This operation is atomic and transactional: either all fields are updated
-    and the corresponding outbox event is written, or none of them are.
-    """
-    response_data = await AuthService.update_profile(
-        user=current_user,
-        request=request,
-        db=db,
-    )
-
-    return ResponseModel(
-        success=True,
-        data=response_data,
-        timestamp=datetime.now(timezone.utc).isoformat() + "Z",
-    )
-

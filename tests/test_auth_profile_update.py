@@ -76,7 +76,7 @@ class TestProfileUpdateSuccess:
             "email": "updated@example.com",
         }
 
-        response = profile_client.put("/api/v1/auth/profile", json=payload)
+        response = profile_client.put("/api/v1/profile", json=payload)
 
         assert response.status_code == 200
         data = response.json()
@@ -121,7 +121,7 @@ class TestProfileUpdateValidation:
         payload: dict,
     ):
         """Invalid payloads should be rejected with 400 (validation error)."""
-        response = profile_client.put("/api/v1/auth/profile", json=payload)
+        response = profile_client.put("/api/v1/profile", json=payload)
         assert response.status_code == 400
 
     @pytest.mark.parametrize(
@@ -147,7 +147,7 @@ class TestProfileUpdateValidation:
         payload: dict,
     ):
         """first_name and last_name must be single words without spaces."""
-        response = profile_client.put("/api/v1/auth/profile", json=payload)
+        response = profile_client.put("/api/v1/profile", json=payload)
 
         assert response.status_code == 400
         data = response.json()
@@ -181,7 +181,7 @@ class TestProfileUpdateDuplicateEmail:
             "email": "existing@example.com",
         }
 
-        response = profile_client.put("/api/v1/auth/profile", json=payload)
+        response = profile_client.put("/api/v1/profile", json=payload)
 
         assert response.status_code == 400
         data = response.json()
