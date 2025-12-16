@@ -281,7 +281,7 @@ Once running, access:
 
 #### 1. User Registration
 
-**Endpoint**: `POST /api/v1/auth/register`
+**Endpoint**: `POST /api/v1/register`
 
 **Request**:
 ```json
@@ -639,7 +639,7 @@ pytest tests/test_auth_register.py -v
 
 **Example cURL:**
 ```bash
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8000/api/v1/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -666,9 +666,7 @@ curl -X POST http://localhost:8000/api/v1/auth/register \
   - `UserProfileUpdateRequest` (fields: `first_name`, `last_name`, `email`)
   - `UserProfileResponse` (updated user data)
 - `app/routers/auth.py` – Add a new endpoint, for example:
-  - `PUT /api/v1/auth/profile` or `PATCH /api/v1/auth/profile`
-- `app/services/auth_service.py` – Add:
-  - `AuthService.update_profile(...)` handling validation, DB update, and outbox write.
+  - `PUT /api/v1/profile` or `PATCH /api/v1/profile`
 - `app/models/OutboxEvent.py` (already exists) – reused to store the profile-updated event.
 - `tests/test_auth_profile_update.py` – New test file for profile update behavior.
 
@@ -687,61 +685,6 @@ class UserProfileResponse(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-```
-
-```python
-# app/services/auth_service.py
-from app.events import EventTypes
-from app.models.OutboxEvent import OutboxEvent
-
-class AuthService:
-    @staticmethod
-    async def update_profile(
-        user: User,
-        request: UserProfileUpdateRequest,
-        db: Session,
-    ) -> UserProfileResponse:
-        # Validate email uniqueness (exclude current user)
-        existing = (
-            db.query(User)
-            .filter(User.email == request.email, User.id != user.id)
-            .first()
-        )
-        if existing:
-            raise DuplicateEmailError(request.email)
-
-        user.first_name = request.first_name
-        user.last_name = request.last_name
-        user.email = request.email
-
-        outbox_event = OutboxEvent(
-            event_type=EventTypes.USER_PROFILE_UPDATED,
-            aggregate_id=str(user.id),
-            payload={
-                "user_id": str(user.id),
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-            },
-            status="pending",
-        )
-
-        try:
-            db.add(user)
-            db.add(outbox_event)
-            db.commit()
-            db.refresh(user)
-        except IntegrityError:
-            # Roll back so user changes and outbox entry are not partially applied
-            db.rollback()
-            raise
-
-        return UserProfileResponse(
-            user_id=user.id,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            email=user.email,
-        )
 ```
 
 **Unit Tests:**
@@ -1031,7 +974,7 @@ def mock_jwt_token(valid_user: User) -> str:
 ```python
 # tests/test_auth_register.py
 def test_register_success(client: TestClient, valid_user_data: dict):
-    response = client.post("/api/v1/auth/register", json=valid_user_data)
+    response = client.post("/api/v1/register", json=valid_user_data)
     
     assert response.status_code == 201
     data = response.json()
@@ -1041,7 +984,7 @@ def test_register_success(client: TestClient, valid_user_data: dict):
 
 def test_register_duplicate_email(client: TestClient, valid_user_data: dict, valid_user: User):
     # User already exists
-    response = client.post("/api/v1/auth/register", json=valid_user_data)
+    response = client.post("/api/v1/register", json=valid_user_data)
     
     assert response.status_code == 400
     data = response.json()
@@ -1208,8 +1151,6 @@ Key components:
 
 - `app/models/OutboxEvent.py` – ORM model for the `outbox_event` table.
 - `migrations/versions/003_create_outbox_event_table.py` – Alembic migration that creates the table and indexes.
-- `app/services/auth_service.py` – registration flow persists a `USER_REGISTERED` outbox event instead of publishing directly.
-- `app/scripts/outbox_worker.py` – async worker that:
   - Polls `outbox_event` rows with `status="pending"`,
   - Calls `EventPublisher.publish(event.event_type, event.payload)`,
   - Updates `status`, `published_at`, `retry_count`, and `last_error`.

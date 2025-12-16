@@ -27,7 +27,7 @@ class TestValidationExceptionHandler:
             **weak_password_data,
         }
 
-        response = client.post("/api/v1/auth/register", json=payload)
+        response = client.post("/api/v1/register", json=payload)
 
         assert response.status_code == 400
         data = response.json()
@@ -60,7 +60,7 @@ class TestValidationExceptionHandler:
             "password_confirmation": valid_user_data["password_confirmation"],
         }
 
-        response = client.post("/api/v1/auth/register", json=payload)
+        response = client.post("/api/v1/register", json=payload)
 
         assert response.status_code == 400
         data = response.json()

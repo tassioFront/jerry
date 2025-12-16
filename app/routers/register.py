@@ -5,14 +5,13 @@ from fastapi import APIRouter, status
 from app.dependencies import DatabaseSession
 from app.schemas.common import ResponseModel
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
-from app.schemas.user import UserProfileUpdateRequest
-from app.services.auth_service import AuthService
+from app.services.register_service import RegisterService
 
-router = APIRouter(prefix="/v1/auth", tags=["authentication"])
+router = APIRouter(tags=["authentication"])
 
 
 @router.post(
-    "/register",
+    "/v1/register",
     status_code=status.HTTP_201_CREATED,
     response_model=ResponseModel[UserRegisterResponse],
 )
@@ -35,7 +34,7 @@ async def register(
         PasswordMismatchError: If passwords don't match
         ValidationError: If validation fails
     """
-    response_data = await AuthService.register_user(request, db)
+    response_data = await RegisterService.register_user(request, db)
 
     return ResponseModel(
         success=True,

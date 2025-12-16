@@ -1,4 +1,3 @@
-"""FastAPI application initialization"""
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, FastAPI, Request
@@ -10,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from app.config import settings
 from app.exception_handlers import register_exception_handlers
 from app.exceptions import AuthException, DuplicateEmailError
-from app.routers import auth, health, login, profile
+from app.routers import register, health, login, profile
 
 app = FastAPI(
     title="Auth Service",
@@ -30,7 +29,7 @@ app.add_middleware(
 )
 
 # Include routers
-prefix.include_router(auth.router)
+prefix.include_router(register.router)
 prefix.include_router(login.router)
 prefix.include_router(profile.router)
 prefix.include_router(health.router)

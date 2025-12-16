@@ -5,6 +5,6 @@ set -e
 
 echo "Running tests in Docker..."
 
-docker compose run --rm test pytest "${@:-tests/}"
+docker compose run --rm test sh -c "alembic upgrade head && pytest -s ${@:-tests/}"
 
 

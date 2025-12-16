@@ -12,7 +12,7 @@ class TestRegisterSuccess:
     
     def test_register_success(self, client: TestClient, valid_user_data: dict):
         """Test successful user registration"""
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         
         assert response.status_code == 201
         data = response.json()
@@ -33,7 +33,7 @@ class TestRegisterSuccess:
         user_count_before = db_session.query(User).count()
         
         # Register user
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         assert response.status_code == 201
         
         # Count users after
@@ -57,7 +57,7 @@ class TestRegisterSuccess:
         valid_user_data: dict
     ):
         """Test that password is properly hashed in database"""
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         assert response.status_code == 201
         
         user = db_session.query(User).filter(
@@ -79,7 +79,7 @@ class TestRegisterDuplicateEmail:
         valid_user_data: dict
     ):
         """Test that registering with duplicate email is rejected"""
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         
         assert response.status_code == 400
         data = response.json()
@@ -98,7 +98,7 @@ class TestRegisterDuplicateEmail:
         duplicate_data = valid_user_data.copy()
         duplicate_data["email"] = valid_user_data["email"].upper()
         
-        response = client.post("/api/v1/auth/register", json=duplicate_data)
+        response = client.post("/api/v1/register", json=duplicate_data)
         
         # Should still be rejected (though our current implementation is case-sensitive)
         # This test documents current behavior
@@ -115,7 +115,7 @@ class TestRegisterPasswordValidation:
     ):
         """Test that password mismatch is rejected"""
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v1/register",
             json=mismatched_password_data
         )
         
@@ -131,7 +131,7 @@ class TestRegisterPasswordValidation:
     ):
         """Test that weak password is rejected"""
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v1/register",
             json=weak_password_data
         )
         
@@ -148,7 +148,7 @@ class TestRegisterPasswordValidation:
             "password_confirmation": "Short1!"
         }
         
-        response = client.post("/api/v1/auth/register", json=data)
+        response = client.post("/api/v1/register", json=data)
         
         assert response.status_code == 400
         response_data = response.json()
@@ -162,7 +162,7 @@ class TestRegisterPasswordValidation:
             "password_confirmation": "lowercase123!"
         }
         
-        response = client.post("/api/v1/auth/register", json=data)
+        response = client.post("/api/v1/register", json=data)
         
         assert response.status_code == 400
         response_data = response.json()
@@ -176,7 +176,7 @@ class TestRegisterPasswordValidation:
             "password_confirmation": "NoNumber!"
         }
         
-        response = client.post("/api/v1/auth/register", json=data)
+        response = client.post("/api/v1/register", json=data)
         
         assert response.status_code == 400
         response_data = response.json()
@@ -190,7 +190,7 @@ class TestRegisterPasswordValidation:
             "password_confirmation": "NoSpecial123"
         }
         
-        response = client.post("/api/v1/auth/register", json=data)
+        response = client.post("/api/v1/register", json=data)
         
         assert response.status_code == 400
         response_data = response.json()
@@ -207,7 +207,7 @@ class TestRegisterEmailValidation:
     ):
         """Test that invalid email format is rejected"""
         response = client.post(
-            "/api/v1/auth/register",
+            "/api/v1/register",
             json=invalid_email_data
         )
         
@@ -224,7 +224,7 @@ class TestRegisterEmailValidation:
             "password_confirmation": "SecurePassword123!"
         }
         
-        response = client.post("/api/v1/auth/register", json=data)
+        response = client.post("/api/v1/register", json=data)
         
         # Empty email should be rejected with 400 (validation error)
         assert response.status_code == 400
@@ -247,7 +247,7 @@ class TestRegisterNameValidation:
             "first_name": "Multi Word",
         }
 
-        response = client.post("/api/v1/auth/register", json=payload)
+        response = client.post("/api/v1/register", json=payload)
 
         assert response.status_code == 400
         data = response.json()
@@ -266,7 +266,7 @@ class TestRegisterNameValidation:
             "last_name": "Multi Word",
         }
 
-        response = client.post("/api/v1/auth/register", json=payload)
+        response = client.post("/api/v1/register", json=payload)
 
         assert response.status_code == 400
         data = response.json()
@@ -289,7 +289,7 @@ class TestRegisterEventPublishing:
         # Note: This is a basic test. In a real scenario, you might want to
         # mock the EventPublisher to verify it was called with correct data
         
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         assert response.status_code == 201
         
         # Verify user was created (event should have been published)
@@ -311,7 +311,7 @@ class TestRegisterResponseFormat:
         valid_user_data: dict
     ):
         """Test that response follows standard format"""
-        response = client.post("/api/v1/auth/register", json=valid_user_data)
+        response = client.post("/api/v1/register", json=valid_user_data)
         assert response.status_code == 201
         
         data = response.json()

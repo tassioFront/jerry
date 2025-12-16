@@ -1,4 +1,3 @@
-"""Authentication business logic"""
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -17,9 +16,7 @@ from app.events import EventTypes
 logger = logging.getLogger(__name__)
 
 
-class AuthService:
-    """Service for authentication operations"""
-
+class RegisterService:
     @staticmethod
     async def register_user(
         request: UserRegisterRequest,
