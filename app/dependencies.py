@@ -17,7 +17,7 @@ security_scheme = HTTPBearer(auto_error=True)
 
 
 def get_current_user(
-    # credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     """
@@ -26,16 +26,14 @@ def get_current_user(
     Expects a JWT access token with a "user_id" claim and loads the
     corresponding User from the database.
     """
-    # token = credentials.credentials
-    # payload = verify_token(token)
+    token = credentials.credentials
+    payload = verify_token(token)
 
-    # user_id = payload.get("user_id") or payload.get("sub")
-    # if not user_id:
-    #     raise InvalidTokenError("Token payload missing user identifier")
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise InvalidTokenError()
 
 
-    # [to-do] change it after has token
-    user_id = 'a986724f-52e1-4ad4-b286-eaf0ad0d6561'
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise UserNotFoundError()
