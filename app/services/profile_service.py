@@ -1,15 +1,17 @@
+from uuid import UUID
+from app.schemas.error_code import ErrorCode
 from app.schemas.pagination import PaginatedResponse
 from app.utils.paginator import paginate_query
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.exceptions import DuplicateEmailError
+from app.exceptions import AuthException, DuplicateEmailError, NotAllowed
 from app.models.User import User
 from app.models.OutboxEvent import OutboxEvent
 from app.schemas.profile import UserProfileGetUsersRequest, UserProfileUpdateRequest, UserProfileResponse
 from app.utils.logger import logging
 from app.events import EventTypes
-from fastapi import Query
+from fastapi import Query, status
 
 
 logger = logging.getLogger(__name__)
@@ -22,6 +24,7 @@ class ProfileService:
         user: User,
         request: UserProfileUpdateRequest,
         db: Session,
+        user_id: UUID # id from url
     ) -> UserProfileResponse:
         """
         Update basic user profile information in a single atomic transaction.
@@ -31,6 +34,8 @@ class ProfileService:
             request: Profile update request with first_name, last_name, and email.
             db: Database session.
         """
+        if (user_id != user.id):
+            raise NotAllowed()
         existing = (
             db.query(User)
             .filter(User.email == request.email, User.id != user.id)

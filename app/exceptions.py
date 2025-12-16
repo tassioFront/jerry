@@ -77,6 +77,15 @@ class InvalidTokenError(AuthException):
             details={"field": "token", "issue": "Token is invalid"}
         )
 
+class NotAllowed(AuthException):
+    """Email already registered"""
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            error_code=ErrorCode.NOT_ALLOWED,
+            message=f"You don't have permission to perform it",
+        )
+
 
 class ExpiredTokenError(AuthException):
     """Token has expired"""

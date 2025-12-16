@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from uuid import UUID
 
 from fastapi import APIRouter, status, Depends
 
@@ -16,11 +17,12 @@ T = TypeVar("T")
 router = APIRouter(tags=["authentication"])
 
 @router.put(
-    "/v1/profile",
+    "/v1/profile/{user_id}",
     status_code=status.HTTP_200_OK,
     response_model=ResponseModel[UserProfileResponse],
 )
 async def update_profile(
+    user_id: UUID,
     request: UserProfileUpdateRequest,
     db: DatabaseSession,
     current_user: User = Depends(get_current_user),
@@ -35,6 +37,7 @@ async def update_profile(
         user=current_user,
         request=request,
         db=db,
+        user_id=user_id
     )
 
     return ResponseModel[UserProfileResponse](

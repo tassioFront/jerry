@@ -7,11 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.main import app
 from app.database import get_db
-from app.models.User import User
+from app.models.User import User, UserType
 from app.models.OutboxEvent import OutboxEvent
 from app.utils.password import hash_password
 from app import dependencies
 
+id=uuid4() 
+id2=uuid4() 
 
 def override_get_current_user_factory(db_session: Session):
     """Return a dependency override that always yields the same user."""
@@ -25,14 +27,25 @@ def override_get_current_user_factory(db_session: Session):
         )
         if not user:
             user = User(
-                id=uuid4(),
+                id=id,
                 email="profile@example.com",
                 first_name="Current",
                 last_name="User",
                 password_hash=hash_password("SecurePassword123!"),
                 is_email_verified=True,
+                type=UserType.CLIENT
+            )
+            user2 = User(
+                id=id2,
+                email="profile2@example.com",
+                first_name="ANother",
+                last_name="User",
+                password_hash=hash_password("SecurePassword123!"),
+                is_email_verified=True,
+                type=UserType.CLIENT
             )
             db_session.add(user)
+            db_session.add(user2)
             db_session.commit()
             db_session.refresh(user)
         return user
@@ -76,7 +89,7 @@ class TestProfileUpdateSuccess:
             "email": "updated@example.com",
         }
 
-        response = profile_client.put("/api/v1/profile", json=payload)
+        response = profile_client.put(f"/api/v1/profile/{id}", json=payload)
 
         assert response.status_code == 200
         data = response.json()
@@ -103,6 +116,22 @@ class TestProfileUpdateSuccess:
         assert event.payload["last_name"] == payload["last_name"]
         assert event.payload["email"] == payload["email"]
 
+    def test_update_profile_not_allowed(
+        self,
+        profile_client: TestClient,
+        db_session: Session,
+    ):
+        payload = {
+            "first_name": "UpdatedFirst",
+            "last_name": "UpdatedLast",
+            "email": "updated@example.com",
+        }
+
+        response = profile_client.put(f"/api/v1/profile/{id2}", json=payload)
+
+        assert response.status_code == 401
+        data = response.json()
+        assert data["success"] is False
 
 class TestProfileUpdateValidation:
     """Tests for validation behavior in profile update."""
@@ -121,7 +150,7 @@ class TestProfileUpdateValidation:
         payload: dict,
     ):
         """Invalid payloads should be rejected with 400 (validation error)."""
-        response = profile_client.put("/api/v1/profile", json=payload)
+        response = profile_client.put(f"/api/v1/profile/{id}", json=payload)
         assert response.status_code == 400
 
     @pytest.mark.parametrize(
@@ -147,7 +176,7 @@ class TestProfileUpdateValidation:
         payload: dict,
     ):
         """first_name and last_name must be single words without spaces."""
-        response = profile_client.put("/api/v1/profile", json=payload)
+        response = profile_client.put(f"/api/v1/profile/{id}", json=payload)
 
         assert response.status_code == 400
         data = response.json()
@@ -181,7 +210,7 @@ class TestProfileUpdateDuplicateEmail:
             "email": "existing@example.com",
         }
 
-        response = profile_client.put("/api/v1/profile", json=payload)
+        response = profile_client.put(f"/api/v1/profile/{id}", json=payload)
 
         assert response.status_code == 400
         data = response.json()
