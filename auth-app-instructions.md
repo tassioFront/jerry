@@ -661,19 +661,9 @@ curl -X POST http://localhost:8000/api/v1/register \
 - Enforce **unique email** constraint (updating to an existing email should fail).
 - **Publish an event** (via the transactional outbox) whenever the profile is successfully updated.
 
-**Files to create/modify:**
-- `app/schemas.py` or `app/schemas/user.py` – Add:
-  - `UserProfileUpdateRequest` (fields: `first_name`, `last_name`, `email`)
-  - `UserProfileResponse` (updated user data)
-- `app/routers/auth.py` – Add a new endpoint, for example:
-  - `PUT /api/v1/profile` or `PATCH /api/v1/profile`
-- `app/models/OutboxEvent.py` (already exists) – reused to store the profile-updated event.
-- `tests/test_auth_profile_update.py` – New test file for profile update behavior.
-
 **Key implementations:**
 
 ```python
-# app/schemas.py or app/schemas/user.py
 class UserProfileUpdateRequest(BaseModel):
     first_name: constr(strip_whitespace=True, min_length=1)
     last_name: constr(strip_whitespace=True, min_length=1)

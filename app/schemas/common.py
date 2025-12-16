@@ -2,7 +2,6 @@
 from typing import Generic, TypeVar, Optional
 from pydantic import BaseModel
 
-# Generic type for response wrapper
 T = TypeVar('T')
 
 

@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from app.exceptions import DuplicateEmailError
 from app.models.User import User
 from app.models.OutboxEvent import OutboxEvent
-from app.schemas.user import UserProfileUpdateRequest, UserProfileResponse
+from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse
 from app.utils.logger import logging
 from app.events import EventTypes
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, Depends
 
 from app.dependencies import DatabaseSession, get_current_user
 from app.schemas.common import ResponseModel
-from app.schemas.user import UserProfileUpdateRequest, UserProfileResponse
+from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse
 from app.services.profile_service import ProfileService
 from app.models.User import User
 
