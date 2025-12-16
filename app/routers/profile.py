@@ -7,7 +7,7 @@ from app.dependencies import DatabaseSession, NotClientOnly, get_current_user, r
 from app.schemas.common import ResponseModel
 from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse, UserProfileGetUsersRequest
 from app.services.profile_service import ProfileService
-from app.models.User import User, UserType
+from app.models.User import User
 from app.schemas.pagination import PaginatedResponse
 
 from typing import TypeVar
@@ -46,8 +46,6 @@ async def update_profile(
         timestamp=datetime.now(timezone.utc).isoformat() + "Z",
     )
 
-
-UserAdminGuard = require_user_type([UserType.SUDO, UserType.ADMIN, UserType.AUDIT])
 
 
 @router.get(

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from app.scripts.init_sudo_user import init_sudo_user
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -51,3 +52,5 @@ async def auth_exception_handler(request: Request, exc: AuthException):
             "timestamp": datetime.now(timezone.utc).isoformat() + "Z"
         }
     )
+
+init_sudo_user()

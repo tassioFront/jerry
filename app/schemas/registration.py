@@ -1,6 +1,6 @@
 """Registration-related schemas"""
 from uuid import UUID
-from app.models.User import UserType
+from app.models.User import AllowedUserType
 from app.schemas.error_code import ErrorCode
 from pydantic import BaseModel, EmailStr, field_validator, constr
 from typing import Optional
@@ -63,7 +63,7 @@ class UserRegisterRequest(BaseModel):
 
 
 class InternalUserRegisterRequest(UserRegisterRequest):
-    type: UserType
+    type: AllowedUserType
 
 
 class UserRegisterResponse(BaseModel):

@@ -1,6 +1,7 @@
 """SQLAlchemy ORM models for the authentication service"""
 import enum
 from datetime import datetime, timezone
+from typing import Literal
 from uuid import UUID, uuid4
 from sqlalchemy import String, Boolean, DateTime, func, Enum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -20,6 +21,8 @@ class UserType(str, enum.Enum):
     ADMIN = "admin"
     AUDIT = "audit"
     CLIENT = "client"
+
+AllowedUserType = Literal[UserType.ADMIN, UserType.AUDIT, UserType.CLIENT]
 
 
 class User(Base):

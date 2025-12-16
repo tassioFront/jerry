@@ -30,6 +30,8 @@ def _parse_custom_value_error(message: str) -> dict[str, Any] | None:
         raw_tuple = message.split("Value error,", 1)[1].strip()
         parsed = ast.literal_eval(raw_tuple)
         code, msgs = parsed
+        logger.debug('[validation_exception_handler]: Custom Value error')
+        logger.debug(msgs)
         return {
             "msg": msgs,
             "code": code,
@@ -57,15 +59,19 @@ def _build_custom_error(error: dict[str, Any]) -> dict[str, Any] | None:
 
     if error_type == "missing":
         field: tuple = error["loc"]
+        logger.debug('[validation_exception_handler]: Missing field error')
+        logger.debug(error_msg)
         return {
             "msg": f"{field[1]} is required",
             "code": "MISSING_FIELD",
             "field": field[1],
         }
 
-    if error_type == "value_error" or error_type == 'enum':
+    if error_type == "value_error" or error_type == 'enum' or 'literal_error':
         # e.g. email format, auto value error raised by FastAPI/Pydantic
         field: tuple = error["loc"]
+        logger.debug('[validation_exception_handler]: Value error')
+        logger.debug(error_msg)
         return {
             "field": field[1],
             "msg": error_msg,

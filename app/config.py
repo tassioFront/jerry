@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     # Service Info
     SERVICE_NAME: str = "auth-service"
     SERVICE_VERSION: str = "1.0.0"
+
+    SUDO_USER_NAME: str = "sudo"
+    SUDO_USER_EMAIL: str = "sudo@sudo.com"
+    SUDO_USER_LAST_NAME: str = "user"
+    SUDO_USER_PASS_WORD: str = "Secure123!"
     
     model_config = SettingsConfigDict(
         env_file=".env",
