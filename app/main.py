@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from app.config import settings
 from app.exception_handlers import register_exception_handlers
 from app.exceptions import AuthException, DuplicateEmailError
-from app.routers import auth, health
+from app.routers import auth, health, login
 
 app = FastAPI(
     title="Auth Service",
@@ -31,6 +31,7 @@ app.add_middleware(
 
 # Include routers
 prefix.include_router(auth.router)
+prefix.include_router(login.router)
 prefix.include_router(health.router)
 
 app.include_router(prefix)

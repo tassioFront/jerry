@@ -768,19 +768,11 @@ pytest tests/test_auth_profile_update.py -v
 - Create error responses for invalid credentials
 - Implement rate limiting (optional but recommended)
 - Create unit tests for login
-
-**Files to create:**
-- `tests/test_auth_login.py` - Login endpoint tests
-
-**Files to modify:**
-- `app/schemas.py` - Add login request/response schemas
-- `app/routers/auth.py` - Add login endpoint
-- `app/exceptions.py` - Add login-specific exceptions
+- create dedicated files for login feature
 
 **Key implementations:**
 
 ```python
-# app/schemas.py - Login schemas
 class UserLoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -801,7 +793,6 @@ async def login(
     # Find user by email
     # Verify password
     # Generate tokens
-    # Publish event: UserLoggedInEvent
     # Return tokens and user_id
 ```
 
@@ -814,7 +805,6 @@ Create `tests/test_auth_login.py` with tests for:
 - Token structure and content
 - Token expiration times
 - Refresh token generation
-- Event publishing
 
 **✅ Verification:**
 ```bash
