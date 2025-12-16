@@ -13,7 +13,6 @@ def paginate_query(
     page: int,
     page_size: int,
     schema_cls: type[T],
-    # db: Session,
 ) -> PaginatedResponse[T]:
     total = query.order_by(None).count()
     items = (

@@ -58,7 +58,7 @@ UserAdminGuard = require_user_type([UserType.SUDO, UserType.ADMIN, UserType.AUDI
 async def list_users(
     request: UserProfileGetUsersRequest,
     db: DatabaseSession,
-    # current_user: User = Depends(NotClientOnly),
+    current_user: User = Depends(NotClientOnly),
 ) -> ResponseModel[PaginatedResponse[UserProfileResponse]]:
     response_data = await ProfileService.internal_get_users(
         request=request,

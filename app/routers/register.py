@@ -55,7 +55,7 @@ async def internal_register(
     current_user: User = Depends(NotClientOnly),
 ) -> ResponseModel[UserRegisterResponse]:
     """
-    Register a new user.
+    Register a new user internally.
 
     Args:
         request: Registration request with email, password, and confirmation

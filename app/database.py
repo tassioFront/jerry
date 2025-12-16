@@ -1,7 +1,6 @@
 """Database connection and session management"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
 from app.config import settings
 from app.models.Base import Base
 
@@ -41,21 +40,4 @@ def init_db() -> None:
     """Initialize database tables (creates all tables)"""
     Base.metadata.create_all(bind=engine)
 
-
-# def create_test_engine(database_url: str):
-#     """
-#     Create a test database engine with different configuration.
-    
-#     Args:
-#         database_url: Test database URL
-        
-#     Returns:
-#         SQLAlchemy engine configured for testing
-#     """
-#     return create_engine(
-#         database_url,
-#         poolclass=StaticPool,
-#         connect_args={"check_same_thread": False} if "sqlite" in database_url else {},
-#         echo=False
-#     )
 
