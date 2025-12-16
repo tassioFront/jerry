@@ -4,7 +4,7 @@ services:
     env: docker
     plan: free        # or standard / plus, etc.
     region: oregon       # pick your preferred region
-    runtime: docker
+    runtime: python
     dockerfilePath: Dockerfile
 
     startCommand: |
