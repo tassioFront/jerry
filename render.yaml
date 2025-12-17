@@ -3,6 +3,7 @@ services:
     env: docker
     plan: free
     region: oregon
+    name: Jerry
     dockerfilePath: Dockerfile
 
     envVars:
