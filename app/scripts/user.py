@@ -16,7 +16,7 @@ def get_all_users():
             return
 
         for u in users:
-            print(u.id, u.first_name, u.email, u.is_email_verified)
+            print(u.id, u.first_name, u.email, u.is_email_verified, u.status)
         print('get_all_users end')
     
 

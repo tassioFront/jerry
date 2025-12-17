@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.models.User import AllowedUserType, User
+from app.models.User import AllowedUserType, User, UserStatus
 from app.models.OutboxEvent import OutboxEvent
 from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
 from app.exceptions import DuplicateEmailError, PasswordMismatchError
@@ -47,7 +47,8 @@ class RegisterService:
             password_hash=password_hash,
             is_email_verified=False,
             email_verified_at=None,
-            type=type
+            type=type,
+            status=request.status
         )
 
         email_verification_token = generate_email_verification_token(

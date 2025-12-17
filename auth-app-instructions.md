@@ -604,6 +604,8 @@ alembic init migrations
 
 # Create initial migration
 alembic revision --autogenerate -m "Initial user table"
+docker compose run --rm --user root --entrypoint alembic api revision --autogenerate -m "VERSION_add_user_status"
+
 
 # Apply migration
 alembic upgrade head

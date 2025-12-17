@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import Optional
-from app.models.User import UserType
+from app.models.User import UserStatus, UserType
 from app.schemas.error_code import ErrorCode
 from pydantic import BaseModel, EmailStr, field_validator, constr, Field, ConfigDict
 
@@ -35,6 +35,8 @@ class UserProfileResponse(BaseModel):
     last_name: str
     email: EmailStr
     type: UserType
+    status: UserStatus
+
 
 
 class UserProfileGetUsersRequest(BaseModel):

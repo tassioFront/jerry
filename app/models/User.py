@@ -10,6 +10,11 @@ from app.models.Base import Base
 
 
 
+class UserStatus(str, enum.Enum):
+    active = "active"
+    deactivated = "deactivated"
+    blocked = "blocked" # useful for users that should not be active again
+
 class UserType(str, enum.Enum):
     """
         - sudo: full CRUD on users, including changing other users’ type.
@@ -23,7 +28,6 @@ class UserType(str, enum.Enum):
     CLIENT = "client"
 
 AllowedUserType = Literal[UserType.ADMIN, UserType.AUDIT, UserType.CLIENT]
-
 
 class User(Base):
     """User model for authentication"""
@@ -79,6 +83,12 @@ class User(Base):
         nullable=False,
         index=True,
     )
+    status: Mapped[UserStatus] = mapped_column(
+        Enum(UserStatus, name="user_status_enum"), 
+        default=UserStatus.active,
+        nullable=False
+    )
+    
     
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email={self.email}, is_email_verified={self.is_email_verified})>"

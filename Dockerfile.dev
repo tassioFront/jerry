@@ -36,6 +36,15 @@ COPY migrations ./migrations
 RUN chown -R appuser:appuser /app
 RUN chmod +x /app/docker-entrypoint.sh
 
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+# Use adduser (handles existence, cleaner)
+RUN groupadd -g ${GROUP_ID} -f appuser && \
+    useradd -u ${USER_ID} -g ${GROUP_ID} -m -d /app -s /bin/sh appuser || \
+    true
+
+
 USER appuser
 
 EXPOSE 8000
@@ -43,4 +52,4 @@ EXPOSE 8000
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 # docker-compose will override CMD per service:
 # e.g.: api -> uvicorn main:app, test -> sh -c "alembic upgrade head && pytest -v"
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
