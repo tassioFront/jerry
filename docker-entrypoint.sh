@@ -1,46 +1,44 @@
-#!/bin/bash
-# Docker entrypoint script for running migrations and starting the app
-
+#!/usr/bin/env bash
 set -e
 
 echo "Waiting for database to be ready..."
 
-# Fix DATABASE_URL if it uses localhost (replace with db for Docker networking)
-export DATABASE_URL=$(echo "$DATABASE_URL" | sed 's/@localhost:/@db:/g' | sed 's/@127.0.0.1:/@db:/g')
+# Require POSTGRES_* or DATABASE_URL to be set
+if [ -z "$DATABASE_URL" ]; then
+  if [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD" ] || [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_HOST" ] || [ -z "$POSTGRES_PORT" ]; then
+    echo "ERROR: DATABASE_URL is not set and one or more POSTGRES_* env vars are missing."
+    echo "Required: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_HOST, POSTGRES_PORT"
+    exit 1
+  fi
+  export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+fi
 
-# Wait for PostgreSQL to be ready using Python (more reliable in containers)
-python3 << EOF
+export DB_URL="$DATABASE_URL"
+
+python3 << 'EOF'
 import sys
 import time
-import psycopg2
 import os
+import psycopg2
 
+db_url = os.getenv("DB_URL")
 max_retries = 30
-retry_count = 0
-db_url = os.getenv('DATABASE_URL', 'postgresql://auth_user:auth_password@db:5432/auth_db')
 
-while retry_count < max_retries:
+for attempt in range(1, max_retries + 1):
     try:
         conn = psycopg2.connect(db_url)
         conn.close()
         print("PostgreSQL is up!")
         sys.exit(0)
-    except psycopg2.OperationalError:
-        retry_count += 1
-        if retry_count < max_retries:
-            time.sleep(1)
-        else:
-            print("Failed to connect to PostgreSQL after 30 retries")
+    except psycopg2.OperationalError as e:
+        if attempt == max_retries:
+            print(f"Failed to connect to PostgreSQL after {max_retries} retries: {e}")
             sys.exit(1)
+        time.sleep(1)
 EOF
 
 echo "Executing migrations..."
-
-# Run migrations
 alembic upgrade head
 
 echo "Migrations completed. Starting application..."
-
-# Execute the main command
 exec "$@"
-
