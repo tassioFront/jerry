@@ -1,32 +1,46 @@
-# Development Dockerfile for FastAPI Authentication Service
+# Dev Dockerfile for FastAPI auth service
 FROM python:3.11-slim
 
-# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Set work directory
+# Dev user (optional, keep same as prod for consistency)
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 WORKDIR /app
 
-# Install system dependencies
+# System deps
 RUN apt-get update && apt-get install -y \
     gcc \
     postgresql-client \
-    python3-psycopg2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies (including dev)
-COPY requirements.txt requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir -r requirements-dev.txt
+# Install base deps
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Install dev deps
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir -r requirements-dev.txt
 
-# Expose port
+# Copy entrypoint and necessary metadata (scripts, alembic, etc.)
+COPY docker-entrypoint.sh .
+COPY alembic.ini .
+COPY migrations ./migrations
+
+# For local dev we mount the source code as a volume,
+# so no need to copy app/tests here (compose will bind-mount).
+
+RUN chown -R appuser:appuser /app
+RUN chmod +x /app/docker-entrypoint.sh
+
+USER appuser
+
 EXPOSE 8000
 
-# Run the application in development mode with auto-reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# docker-compose will override CMD per service:
+# e.g.: api -> uvicorn main:app, test -> sh -c "alembic upgrade head && pytest -v"
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

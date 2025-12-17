@@ -198,3 +198,20 @@ docker compose run --rm migrate migrate
 # Or execute in running container
 docker compose exec api alembic upgrade head
 ```
+
+### 4. Docker useful commands
+
+- Delete all containers
+
+```bash
+docker container prune
+```
+
+- Delete all images
+
+```bash
+docker image prune
+
+# for not used images only
+docker container prune -a
+```
