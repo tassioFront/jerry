@@ -3,7 +3,7 @@ from typing import Callable
 
 from app.models import User
 from app.models.User import UserType
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, BackgroundTasks
 
 from app.dependencies import DatabaseSession, AdminLevel, require_user_active_status
 from app.schemas.common import ResponseModel
@@ -21,6 +21,7 @@ router = APIRouter(tags=["authentication"])
 async def register(
     request: UserRegisterRequest,
     db: DatabaseSession,
+    background_tasks: BackgroundTasks
 ) -> ResponseModel[UserRegisterResponse]:
     """
     Register a new user: client type only.
@@ -37,7 +38,7 @@ async def register(
         PasswordMismatchError: If passwords don't match
         ValidationError: If validation fails
     """
-    response_data = await RegisterService.register_user(request, db, UserType.CLIENT)
+    response_data = await RegisterService.register_user(request, db, UserType.CLIENT, background_tasks)
 
     return ResponseModel(
         success=True,

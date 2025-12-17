@@ -1,3 +1,5 @@
+from app.config import settings
+from app.email_config import conf
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -10,9 +12,13 @@ from app.utils.logger import logging
 from app.utils.mask_email import mask_email
 from app.utils.password import hash_password
 from app.events import EventTypes
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from fastapi import BackgroundTasks
+
 
 
 logger = logging.getLogger(__name__)
+fm = FastMail(conf)  # Global FastMail instance
 
 
 class RegisterService:
@@ -20,7 +26,8 @@ class RegisterService:
     async def register_user(
         request: UserRegisterRequest,
         db: Session,
-        type: AllowedUserType
+        type: AllowedUserType,
+        background_tasks: BackgroundTasks
     ) -> UserRegisterResponse:
         """
         Args:
@@ -55,6 +62,24 @@ class RegisterService:
             str(user.id),
             user.email,
         )
+        verification_url = f"{settings.SERVICE_URL}/api/v1/email/verify?token={email_verification_token}"
+
+
+        logger.debug(f"[REGISTER_LOG] generate email link {verification_url}")
+
+        message = MessageSchema(
+            subject="[Jerry] Verify your email address",
+            recipients=[user.email],
+            body=f"Please verify your email: {verification_url}",
+            subtype=MessageType.html,
+            html=f"""
+            <h2>Email Verification</h2>
+            <p>Click the link below to verify your email:</p>
+            <a href="{verification_url}">Verify Email</a>
+            <p>This link expires in 15 minutes.</p>
+            """
+        )
+
 
         db.add(user)
 
@@ -74,6 +99,7 @@ class RegisterService:
         try:
             db.commit()
             db.refresh(user)
+            background_tasks.add_task(fm.send_message, message)
             logger.info(
                 f"[REGISTER_LOG] User created and outbox event stored: {user.id} - {hidden_email}"
             )

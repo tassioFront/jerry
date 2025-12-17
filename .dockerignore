@@ -20,3 +20,8 @@
 
 # Allow these only if you actually need them inside the image
 !.env.example
+
+
+# email
+!templates/
+

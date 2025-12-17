@@ -215,3 +215,9 @@ docker image prune
 # for not used images only
 docker container prune -a
 ```
+
+- Run as root 
+
+```bash
+docker compose run --rm --user root api pip install -r requirements.txt
+```
