@@ -7,7 +7,7 @@ from fastapi import APIRouter, status, Depends, BackgroundTasks
 
 from app.dependencies import DatabaseSession, AdminLevel, require_user_active_status
 from app.schemas.common import ResponseModel
-from app.schemas.registration import InternalUserRegisterRequest, UserRegisterRequest, UserRegisterResponse
+from app.schemas.registration import InternalUserRegisterRequest, UserRegisterEmailVerifyResponse, UserRegisterRequest, UserRegisterResponse, UserRegisterVerifyEmailRequest
 from app.services.register_service import RegisterService
 
 router = APIRouter(tags=["authentication"])
@@ -73,6 +73,24 @@ async def internal_register(
         ValidationError: If validation fails
     """
     response_data = await RegisterService.register_user(request, db, request.type)
+
+    return ResponseModel(
+        success=True,
+        data=response_data,
+        timestamp=datetime.now(timezone.utc).isoformat() + "Z",
+    )
+
+
+@router.get(
+    "/v1/register/verify",
+    status_code=status.HTTP_201_CREATED,
+    response_model=ResponseModel[UserRegisterEmailVerifyResponse],
+)
+async def verify_email(
+    db: DatabaseSession,
+    request: UserRegisterVerifyEmailRequest = Depends(),
+) -> ResponseModel[UserRegisterEmailVerifyResponse]:
+    response_data = await RegisterService.verify_email(request, db)
 
     return ResponseModel(
         success=True,

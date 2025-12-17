@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from app.config import settings
 from app.email_config import conf
 from sqlalchemy.orm import Session
@@ -5,9 +6,9 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models.User import AllowedUserType, User, UserStatus
 from app.models.OutboxEvent import OutboxEvent
-from app.schemas.registration import UserRegisterRequest, UserRegisterResponse
-from app.exceptions import DuplicateEmailError, PasswordMismatchError
-from app.utils.tokens import generate_email_verification_token
+from app.schemas.registration import UserRegisterEmailVerifyResponse, UserRegisterRequest, UserRegisterResponse, UserRegisterVerifyEmailRequest
+from app.exceptions import DuplicateEmailError, PasswordMismatchError, UserNotFoundError
+from app.utils.tokens import decode_token, generate_email_verification_token
 from app.utils.logger import logging
 from app.utils.mask_email import mask_email
 from app.utils.password import hash_password
@@ -120,3 +121,32 @@ class RegisterService:
             email=user.email,
             message="Registration successful. Please verify your email.",
         )
+
+    @staticmethod
+    async def verify_email(
+        request: UserRegisterVerifyEmailRequest,
+        db: Session,
+    ) -> UserRegisterEmailVerifyResponse: 
+        data = decode_token(request.token)
+        email = data['email']
+        hidden_email = mask_email(email)
+
+        user: User = db.query(User).filter(User.email == email).first()
+        if not user:
+            logger.debug(
+                f"[REGISTER_LOG] User does not exists - {hidden_email}"
+            )
+            raise UserNotFoundError(email)
+        
+        user.is_email_verified = True
+        user.email_verified_at = datetime.now(timezone.utc).replace(tzinfo=None)
+
+        try:
+            db.add(user)
+            db.commit()
+        except IntegrityError:
+            logger.debug(f"user {hidden_email} NOT update")
+            db.rollback()
+            raise
+
+        return UserRegisterEmailVerifyResponse()

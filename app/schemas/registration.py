@@ -15,7 +15,6 @@ class UserRegisterRequest(BaseModel):
     status: UserStatus = Field(default=UserStatus.active)
 
 
-
     @field_validator("first_name", "last_name")
     @classmethod
     def validate_single_word_name(cls, v: str) -> str:
@@ -70,4 +69,10 @@ class UserRegisterResponse(BaseModel):
     user_id: UUID
     email: str
     message: str
+
+class UserRegisterVerifyEmailRequest(BaseModel):
+    token: str = Field(..., min_length=1)
+
+class UserRegisterEmailVerifyResponse(BaseModel):
+    pass
 

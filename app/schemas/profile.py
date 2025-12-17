@@ -3,6 +3,7 @@ from typing import Optional
 from app.models.User import UserStatus, UserType
 from app.schemas.error_code import ErrorCode
 from pydantic import BaseModel, EmailStr, field_validator, constr, Field, ConfigDict
+from datetime import datetime
 
 
 class UserProfileUpdateRequest(BaseModel):
@@ -36,6 +37,8 @@ class UserProfileResponse(BaseModel):
     email: EmailStr
     type: UserType
     status: UserStatus
+    is_email_verified: bool 
+    email_verified_at: Optional[datetime] = None
 
 
 
