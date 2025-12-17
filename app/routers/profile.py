@@ -58,6 +58,7 @@ async def list_users(
     request: UserProfileGetUsersRequest,
     db: DatabaseSession,
     current_user: User = Depends(NotClientOnly),
+    status: User = Depends(require_user_active_status()),
 ) -> ResponseModel[PaginatedResponse[UserProfileResponse]]:
     response_data = await ProfileService.internal_get_users(
         request=request,
