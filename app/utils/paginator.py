@@ -22,7 +22,7 @@ def paginate_query(
         .all()
     )
 
-    # If your schemas have from_attributes/orm_mode, you can do:
+    # If your schemas does not have from_attributes/orm_mode, it wont work:
     results = [schema_cls.model_validate(obj) for obj in items]
 
     total_pages = ceil(total / page_size) if page_size > 0 else 0
