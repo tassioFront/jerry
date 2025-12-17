@@ -56,4 +56,5 @@ def require_user_type(allowed_types: Iterable[UserType]) -> Callable:
     return checker
 
 NotClientOnly = require_user_type([UserType.SUDO, UserType.ADMIN, UserType.AUDIT])
+AdminLevel = require_user_type([UserType.SUDO, UserType.ADMIN])
 
