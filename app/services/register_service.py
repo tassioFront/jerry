@@ -63,7 +63,7 @@ class RegisterService:
             str(user.id),
             user.email,
         )
-        verification_url = f"{settings.SERVICE_URL}/api/v1/email/verify?token={email_verification_token}"
+        verification_url = f"{settings.SERVICE_URL}/api/v1/register/verify={email_verification_token}"
 
 
         logger.debug(f"[REGISTER_LOG] generate email link {verification_url}")
