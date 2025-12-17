@@ -7,9 +7,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.User import User, UserType
+from app.models.User import User, UserStatus, UserType
 from app.utils.tokens import verify_token
-from app.exceptions import InvalidTokenError, UserNotFoundError
+from app.exceptions import InvalidTokenError, NotAllowed, UserNotFoundError
 
 DatabaseSession = Annotated[Session, Depends(get_db)]
 
@@ -47,10 +47,7 @@ def require_user_type(allowed_types: Iterable[UserType]) -> Callable:
 
     async def checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.type not in allowed_set:
-            raise HTTPException(
-                status_code=403,
-                detail="Insufficient permissions",
-            )
+            raise NotAllowed(f"Not allowed for {current_user.type} users")
         return current_user
 
     return checker
@@ -58,3 +55,11 @@ def require_user_type(allowed_types: Iterable[UserType]) -> Callable:
 NotClientOnly = require_user_type([UserType.SUDO, UserType.ADMIN, UserType.AUDIT])
 AdminLevel = require_user_type([UserType.SUDO, UserType.ADMIN])
 
+
+def require_user_active_status() -> Callable:
+    async def checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.status != UserStatus.active:
+            raise NotAllowed(f"Not allowed for {current_user.status.value} users")
+        return current_user
+
+    return checker

@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status, Depends
 
-from app.dependencies import DatabaseSession, NotClientOnly, get_current_user, require_user_type
+from app.dependencies import DatabaseSession, NotClientOnly, get_current_user, require_user_active_status
 from app.schemas.common import ResponseModel
 from app.schemas.profile import UserProfileUpdateRequest, UserProfileResponse, UserProfileGetUsersRequest
 from app.services.profile_service import ProfileService
@@ -26,6 +26,7 @@ async def update_profile(
     request: UserProfileUpdateRequest,
     db: DatabaseSession,
     current_user: User = Depends(get_current_user),
+    status: User = Depends(require_user_active_status()),
 ) -> ResponseModel[UserProfileResponse]:
     """
     Update the authenticated user's basic profile information.

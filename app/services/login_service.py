@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from app.models.User import User
+from app.models.User import User, UserStatus
 from app.schemas.login import UserLoginRequest, TokenResponse
-from app.exceptions import InvalidCredentialsError
+from app.exceptions import InvalidCredentialsError, NotAllowed
 from app.utils.tokens import create_access_token, create_refresh_token
 from app.utils.logger import logging
 from app.utils.mask_email import mask_email
@@ -47,6 +47,8 @@ class LoginService:
                 f"[LOGIN_LOG] Invalid password for user: {user.id} - {hidden_email}"
             )
             raise InvalidCredentialsError()
+        if user.status != UserStatus.active:
+            raise NotAllowed(f"User not allowed due status {user.status.value}")
 
         access_token = create_access_token(
             data={

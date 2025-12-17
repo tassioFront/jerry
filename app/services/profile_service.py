@@ -46,7 +46,8 @@ class ProfileService:
 
         user.first_name = request.first_name
         user.last_name = request.last_name
-        user.email = request.email
+        #[to-do] update email only if it is provided
+        # user.email = request.email
 
         outbox_event = OutboxEvent(
             event_type=getattr(

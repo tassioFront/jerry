@@ -35,7 +35,6 @@ class UserProfileResponse(BaseModel):
     last_name: str
     email: EmailStr
     type: UserType
-    status: UserStatus
 
 
 

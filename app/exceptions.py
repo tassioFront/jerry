@@ -78,12 +78,11 @@ class InvalidTokenError(AuthException):
         )
 
 class NotAllowed(AuthException):
-    """Email already registered"""
-    def __init__(self):
+    def __init__(self, msg: str = "You don't have permission to perform it"):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             error_code=ErrorCode.NOT_ALLOWED,
-            message=f"You don't have permission to perform it",
+            message=msg,
         )
 
 

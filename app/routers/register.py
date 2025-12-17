@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
+from typing import Callable
 
 from app.models import User
 from app.models.User import UserType
 from fastapi import APIRouter, status, Depends
 
-from app.dependencies import DatabaseSession, AdminLevel
+from app.dependencies import DatabaseSession, AdminLevel, require_user_active_status
 from app.schemas.common import ResponseModel
 from app.schemas.registration import InternalUserRegisterRequest, UserRegisterRequest, UserRegisterResponse
 from app.services.register_service import RegisterService
@@ -53,6 +54,7 @@ async def internal_register(
     request: InternalUserRegisterRequest,
     db: DatabaseSession,
     current_user: User = Depends(AdminLevel),
+    status: User = Depends(require_user_active_status()),
 ) -> ResponseModel[UserRegisterResponse]:
     """
     Register a new user internally.
