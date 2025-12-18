@@ -25,6 +25,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+# ✅ Create templates directory during build - FastMAil requirement
+RUN mkdir -p /app/app/templates/
 COPY docker-entrypoint.sh .
 
 # Change ownership to non-root user
